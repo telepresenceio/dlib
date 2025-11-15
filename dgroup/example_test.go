@@ -7,10 +7,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/datawire/dlib/v2/dcontext"
-	"github.com/datawire/dlib/v2/dgroup"
-	"github.com/datawire/dlib/v2/dlog"
-	"github.com/datawire/dlib/v2/internal/sigint"
+	"github.com/telepresenceio/dlib/v2/dcontext"
+	"github.com/telepresenceio/dlib/v2/dgroup"
+	"github.com/telepresenceio/dlib/v2/dlog"
+	"github.com/telepresenceio/dlib/v2/internal/sigint"
 )
 
 func baseContext() context.Context {

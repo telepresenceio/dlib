@@ -14,7 +14,7 @@ import (
 	"os"
 	"path/filepath"
 
-	errgroup "github.com/datawire/dlib/v2/derrgroup"
+	errgroup "github.com/telepresenceio/dlib/v2/derrgroup"
 )
 
 // Pipeline demonstrates the use of a Group to implement a multi-stage

@@ -111,7 +111,7 @@ func (logrusFixCallerHook) Fire(entry *logrus.Entry) error {
 }
 
 const (
-	dlogPackageDot         = "github.com/datawire/dlib/v2/dlog."
+	dlogPackageDot         = "github.com/telepresenceio/dlib/v2/dlog."
 	logrusPackageDot       = "github.com/sirupsen/logrus."
 	maximumCallerDepth int = 25
 	minimumCallerDepth int = 2 // runtime.Callers + getCaller

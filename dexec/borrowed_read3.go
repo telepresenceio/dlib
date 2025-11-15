@@ -24,7 +24,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/datawire/dlib/v2/dexec/internal/poll" // MODIFIED: FROM: "internal/poll"
+	"github.com/telepresenceio/dlib/v2/dexec/internal/poll" // MODIFIED: FROM: "internal/poll"
 )
 
 func main() {

@@ -4,7 +4,7 @@ package dcontext_test
 import (
 	"context"
 
-	"github.com/datawire/dlib/v2/dcontext"
+	"github.com/telepresenceio/dlib/v2/dcontext"
 )
 
 // This example shows a simple 'examplePollingCallee' that is a worker function that

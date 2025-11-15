@@ -21,8 +21,8 @@ import (
 	"strings"
 	"testing"
 
-	exec "github.com/datawire/dlib/v2/dexec"         // MODIFIED: FROM: "os/exec"
-	"github.com/datawire/dlib/v2/dexec/internal/cfg" // MODIFIED: FROM: "internal/cfg"
+	exec "github.com/telepresenceio/dlib/v2/dexec"         // MODIFIED: FROM: "os/exec"
+	"github.com/telepresenceio/dlib/v2/dexec/internal/cfg" // MODIFIED: FROM: "internal/cfg"
 )
 
 // HasGoBuild reports whether the current system can build programs with “go build”

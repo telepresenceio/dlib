@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/datawire/dlib/v2/dcontext"
-	"github.com/datawire/dlib/v2/dhttp"
+	"github.com/telepresenceio/dlib/v2/dcontext"
+	"github.com/telepresenceio/dlib/v2/dhttp"
 )
 
 // This should be a very simple example of a parent caller function, showing how

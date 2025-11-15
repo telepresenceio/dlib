@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/datawire/dlib/v2/dcontext"
-	"github.com/datawire/dlib/v2/dhttp"
-	"github.com/datawire/dlib/v2/dlog"
+	"github.com/telepresenceio/dlib/v2/dcontext"
+	"github.com/telepresenceio/dlib/v2/dhttp"
+	"github.com/telepresenceio/dlib/v2/dlog"
 )
 
 func TestContext(t *testing.T) {

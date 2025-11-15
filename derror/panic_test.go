@@ -9,7 +9,7 @@ import (
 
 	pkgerrors "github.com/pkg/errors"
 
-	"github.com/datawire/dlib/v2/derror"
+	"github.com/telepresenceio/dlib/v2/derror"
 )
 
 var thispackage, thisfile = func() (string, string) {
