@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/datawire/dlib/dcontext"
+	"github.com/datawire/dlib/v2/dcontext"
 )
 
 func TestDebug(t *testing.T) {

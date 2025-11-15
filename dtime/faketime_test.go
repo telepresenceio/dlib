@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/datawire/dlib/dtime"
+	"github.com/datawire/dlib/v2/dtime"
 )
 
 func check(t *testing.T, ft *dtime.FakeTime, what string, wantedSec int) {

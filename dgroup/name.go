@@ -3,7 +3,7 @@ package dgroup
 import (
 	"context"
 
-	"github.com/datawire/dlib/dlog"
+	"github.com/datawire/dlib/v2/dlog"
 )
 
 type goroutineNameKey struct{}

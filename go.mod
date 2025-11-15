@@ -1,4 +1,4 @@
-module github.com/datawire/dlib
+module github.com/datawire/dlib/v2
 
 go 1.24.0
 

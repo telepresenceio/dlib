@@ -13,8 +13,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/datawire/dlib/dexec"
-	"github.com/datawire/dlib/dlog"
+	"github.com/datawire/dlib/v2/dexec"
+	"github.com/datawire/dlib/v2/dlog"
 )
 
 type logWriter struct {

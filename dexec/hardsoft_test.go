@@ -14,8 +14,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/datawire/dlib/dcontext"
-	"github.com/datawire/dlib/dexec"
+	"github.com/datawire/dlib/v2/dcontext"
+	"github.com/datawire/dlib/v2/dexec"
 )
 
 type lineBuffer struct {

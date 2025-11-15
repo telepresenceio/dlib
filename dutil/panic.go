@@ -1,7 +1,7 @@
 package dutil
 
 import (
-	"github.com/datawire/dlib/derror"
+	"github.com/datawire/dlib/v2/derror"
 )
 
 // PanicToError is a legacy alias for derror.PanicToError.

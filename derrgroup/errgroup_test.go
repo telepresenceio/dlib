@@ -14,7 +14,7 @@ import (
 	"os"
 	"testing"
 
-	errgroup "github.com/datawire/dlib/derrgroup"
+	errgroup "github.com/datawire/dlib/v2/derrgroup"
 )
 
 var (

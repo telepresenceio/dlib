@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/datawire/dlib/derror"
+	"github.com/datawire/dlib/v2/derror"
 )
 
 func TestMultiError(t *testing.T) {

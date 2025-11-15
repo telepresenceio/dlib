@@ -5,6 +5,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build ignore
 // +build ignore
 
 // This is a test program that verifies that it can read from
@@ -17,12 +18,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/datawire/dlib/dexec/internal/poll" // MODIFIED: FROM: "internal/poll"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/datawire/dlib/v2/dexec/internal/poll" // MODIFIED: FROM: "internal/poll"
 )
 
 func main() {

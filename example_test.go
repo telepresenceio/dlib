@@ -8,13 +8,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/datawire/dlib/dcontext"
-	"github.com/datawire/dlib/derror"
-	"github.com/datawire/dlib/dexec"
-	"github.com/datawire/dlib/dgroup"
-	"github.com/datawire/dlib/dhttp"
-	"github.com/datawire/dlib/dlog"
-	"github.com/datawire/dlib/dtime"
+	"github.com/datawire/dlib/v2/dcontext"
+	"github.com/datawire/dlib/v2/derror"
+	"github.com/datawire/dlib/v2/dexec"
+	"github.com/datawire/dlib/v2/dgroup"
+	"github.com/datawire/dlib/v2/dhttp"
+	"github.com/datawire/dlib/v2/dlog"
+	"github.com/datawire/dlib/v2/dtime"
 )
 
 // This is an example main() program entry-point that shows how all the pieces of dlib can fit

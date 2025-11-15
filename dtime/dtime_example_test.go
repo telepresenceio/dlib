@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/datawire/dlib/dtime"
+	"github.com/datawire/dlib/v2/dtime"
 )
 
 // This example uses a dtime.FakeTime to change the behavior of

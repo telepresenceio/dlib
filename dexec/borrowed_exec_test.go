@@ -29,11 +29,11 @@ import (
 	"testing"
 	"time"
 
-	exec "github.com/datawire/dlib/dexec"             // MODIFIED: FROM: "os/exec"
-	"github.com/datawire/dlib/dexec/internal/poll"    // MODIFIED: FROM: "internal/poll"
-	"github.com/datawire/dlib/dexec/internal/testenv" // MODIFIED: FROM: "internal/testenv"
+	exec "github.com/datawire/dlib/v2/dexec"             // MODIFIED: FROM: "os/exec"
+	"github.com/datawire/dlib/v2/dexec/internal/poll"    // MODIFIED: FROM: "internal/poll"
+	"github.com/datawire/dlib/v2/dexec/internal/testenv" // MODIFIED: FROM: "internal/testenv"
 
-	"github.com/datawire/dlib/dlog" // MODIFIED: ADDED
+	"github.com/datawire/dlib/v2/dlog" // MODIFIED: ADDED
 )
 
 // haveUnexpectedFDs is set at init time to report whether any

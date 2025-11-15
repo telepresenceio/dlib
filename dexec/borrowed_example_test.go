@@ -12,13 +12,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	exec "github.com/datawire/dlib/dexec" // MODIFIED: FROM: "os/exec"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	exec "github.com/datawire/dlib/v2/dexec" // MODIFIED: FROM: "os/exec"
 )
 
 func ExampleLookPath() {

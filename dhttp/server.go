@@ -45,9 +45,9 @@ import (
 
 	"golang.org/x/net/http2"
 
-	"github.com/datawire/dlib/dcontext"
-	"github.com/datawire/dlib/dgroup"
-	"github.com/datawire/dlib/dlog"
+	"github.com/datawire/dlib/v2/dcontext"
+	"github.com/datawire/dlib/v2/dgroup"
+	"github.com/datawire/dlib/v2/dlog"
 )
 
 // connContextFn is just a convenience type alias because the type signature for concatConnContext
@@ -82,65 +82,65 @@ type testHookContextKey struct{}
 //
 // This is better than http.Server because:
 //
-//  - It natively supports "h2c" (HTTP/2 over cleartext).
+//   - It natively supports "h2c" (HTTP/2 over cleartext).
 //
-//  - Its "h2c" support is better than http.Server with golang.org/x/net/http2/h2c.NewHandler,
-//    because it properly shuts down idle h2c connections when shutdown is initiated, rather than
-//    allowing h2c connections to sit around forever.
+//   - Its "h2c" support is better than http.Server with golang.org/x/net/http2/h2c.NewHandler,
+//     because it properly shuts down idle h2c connections when shutdown is initiated, rather than
+//     allowing h2c connections to sit around forever.
 //
-//  - It uses Context cancellation as a simple and composable shutdown mechanism; supporting
-//    dcontext hard/soft contexts, rather than awkward relationship between the Shutdown and Close
-//    methods.
+//   - It uses Context cancellation as a simple and composable shutdown mechanism; supporting
+//     dcontext hard/soft contexts, rather than awkward relationship between the Shutdown and Close
+//     methods.
 //
-//    Rather than having to set up a tree of cleanup functions calling each other down through your
-//    program and dealing with having to call .Shutdown() and .Close() from another goroutine (and
-//    having to understand the relationship between .Shutdown() and .Close() and when to call each,
-//    which is a bigger task than you might think), the "(ListenAnd)?Serve(TLS)?" methods simply
-//    take a Context and perform cleanup when the Context becomes Done.  In order to differentiate
-//    between whether you want it to hard-shutdown or graceful-shutdown, you may use the dcontext
-//    hard/soft mechanism; if you don't use dcontext then it will be a hard-shutdown.
+//     Rather than having to set up a tree of cleanup functions calling each other down through your
+//     program and dealing with having to call .Shutdown() and .Close() from another goroutine (and
+//     having to understand the relationship between .Shutdown() and .Close() and when to call each,
+//     which is a bigger task than you might think), the "(ListenAnd)?Serve(TLS)?" methods simply
+//     take a Context and perform cleanup when the Context becomes Done.  In order to differentiate
+//     between whether you want it to hard-shutdown or graceful-shutdown, you may use the dcontext
+//     hard/soft mechanism; if you don't use dcontext then it will be a hard-shutdown.
 //
-//  - When shutting down, it properly blocks when waiting for the workers of hijacked connections.
+//   - When shutting down, it properly blocks when waiting for the workers of hijacked connections.
 //
-//    Hijacked connections are connections for which the .Handler said to the server "you know what,
-//    stop doing HTTP and let me use the raw TCP socket" (as when having negotiated an upgrade from
-//    HTTP/1 to WebSockets or from HTTP/1 to HTTP/2).  It is a design deficiency in net/http.Server
-//    that the net/http.Server totally just stops tracking connections when they get hijacked;
-//    failing to close them when you call net/http.Server.Close() and failing to wait for them when
-//    you call net/http.Server.Shutdown(); and unfortunately that design deficiency is locked-in to
-//    *http.Server because of backward compatibility promises.
+//     Hijacked connections are connections for which the .Handler said to the server "you know what,
+//     stop doing HTTP and let me use the raw TCP socket" (as when having negotiated an upgrade from
+//     HTTP/1 to WebSockets or from HTTP/1 to HTTP/2).  It is a design deficiency in net/http.Server
+//     that the net/http.Server totally just stops tracking connections when they get hijacked;
+//     failing to close them when you call net/http.Server.Close() and failing to wait for them when
+//     you call net/http.Server.Shutdown(); and unfortunately that design deficiency is locked-in to
+//     *http.Server because of backward compatibility promises.
 //
-//  - If you use dlog, you don't have to manually configure the logging for the server to do the
-//    right thing.
+//   - If you use dlog, you don't have to manually configure the logging for the server to do the
+//     right thing.
 //
 // Breaking changes from http.Server to ServerConfig that will stop your old code from compiling:
 //
-//  - Obviously, the name is different.
-//  - The "Addr" member field is removed; it is replaced by an "addr" argument to the
-//    "ListenAndServe(TLS)?" methods.
-//  - The "BaseContext" member field is removed; it is replaced by a "ctx" argument to the
-//    "(ListenAnd)?Serve(TLS)?" methods.
-//  - The "RegisterOnShutdown" is removed; it is replaced by an "OnShutdown" member field.
-//  - The "SetKeepAlivesEnabled", "Shutdown", and "Close" methods are removed; they are conceptually
-//    replaced by using Context cancellation for lifecycle management.  Use dcontext soft
-//    cancellation for the graceful shutdown that "Shutdown" allowed.
+//   - Obviously, the name is different.
+//   - The "Addr" member field is removed; it is replaced by an "addr" argument to the
+//     "ListenAndServe(TLS)?" methods.
+//   - The "BaseContext" member field is removed; it is replaced by a "ctx" argument to the
+//     "(ListenAnd)?Serve(TLS)?" methods.
+//   - The "RegisterOnShutdown" is removed; it is replaced by an "OnShutdown" member field.
+//   - The "SetKeepAlivesEnabled", "Shutdown", and "Close" methods are removed; they are conceptually
+//     replaced by using Context cancellation for lifecycle management.  Use dcontext soft
+//     cancellation for the graceful shutdown that "Shutdown" allowed.
 //
 // Breaking changes from http.Server to ServerConfig that will maybe make your old code incorrect:
 //
-//  - The semantics of the "TLSNextProto" member field are slightly different.
-//  - The semantics of the "Error" member field are slightly different.
-//  - The structure is deep-copied by each of the "(ListenAnd)?Serve(TLS)?" methods; mutating the
-//    config structure while a server is running will not affect the running server.
-//  - HTTP/2 support (both "h2" and "h2c") is built-in, so if your code configures HTTP/2 manually,
-//    you're going to need to set "DisableHTTP2: true" to stop ServerConfig from stomping over your
-//    code's work.
+//   - The semantics of the "TLSNextProto" member field are slightly different.
+//   - The semantics of the "Error" member field are slightly different.
+//   - The structure is deep-copied by each of the "(ListenAnd)?Serve(TLS)?" methods; mutating the
+//     config structure while a server is running will not affect the running server.
+//   - HTTP/2 support (both "h2" and "h2c") is built-in, so if your code configures HTTP/2 manually,
+//     you're going to need to set "DisableHTTP2: true" to stop ServerConfig from stomping over your
+//     code's work.
 //
 // Arguably-breaking changes from http.Server that to ServerConfig that I'd say are bugfixes, but
 // could conceivably[2] make someone's old code incorrect:
 //
-//  - *http.Server.ServeTLS won't close the Listener if .ServeTLS returns early during setup due to
-//    having been passed invalid cert or key files; ServerConfig.ServeTLS will always close the
-//    Listener before returning; matching the "Serve" method.
+//   - *http.Server.ServeTLS won't close the Listener if .ServeTLS returns early during setup due to
+//     having been passed invalid cert or key files; ServerConfig.ServeTLS will always close the
+//     Listener before returning; matching the "Serve" method.
 //
 // The reason for creating a new type and having breaking changes (rather than writing a few utility
 // functions that take an *http.Server as an argument) is that it became increasingly clear that the
