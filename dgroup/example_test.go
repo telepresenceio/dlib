@@ -606,6 +606,64 @@ func Example_signalHandling3() {
 	// level=error msg="exiting with error: failed to shut down within the 1s shutdown timeout; some goroutines are left running"
 }
 
+// This example shows the signal handler triggering a soft shutdown
+// when the user hits Ctrl-C when the error from the signal handler
+// is ignored, and what the related logging looks like.
+func Example_signalHandling4() {
+	if !ensureProcessGroup() {
+		// Needed for signal handling in tests on Windows.
+		return
+	}
+	exEvents := make(chan struct{})
+	go func() {
+		// This goroutine isn't "part of" the example, but
+		// simulates the user doing things, in order to drive
+		// the example.
+		self, _ := os.FindProcess(os.Getpid())
+
+		<-exEvents // wait for things to get running
+
+		// Simulate the user hitting Ctrl-C: This will log
+		// that a signal was received, and trigger a
+		// graceful-shutdown, logging that it's triggered
+		// because of a signal.
+		_ = sigint.SendInterrupt(self)
+
+		// The worker goroutine will then respond to the
+		// graceful-shutdown, and Wait() will then log each of
+		// the goroutines' "final" statuses and return.
+	}()
+
+	ctx := baseContext()
+	group := dgroup.NewGroup(ctx, dgroup.GroupConfig{
+		EnableSignalHandling: true,
+		IgnoreSignalError:    true,
+	})
+
+	group.Go("worker", func(ctx context.Context) error {
+		// start up
+		exEvents <- struct{}{}
+
+		// wait for shutdown to be triggered
+		<-ctx.Done()
+
+		// quit
+		return nil
+	})
+
+	if err := group.Wait(); err != nil {
+		dlog.Errorln(ctx, "exiting with error:", err)
+	} else {
+		dlog.Infoln(ctx, "exited without error")
+	}
+
+	close(exEvents)
+	// Output:
+	// level=error msg="goroutine \":signal_handler:0\" exited with error: received signal interrupt (triggering graceful shutdown)" THREAD=":signal_handler:0"
+	// level=info msg="shutting down (gracefully)..." THREAD=":shutdown_logger"
+	// level=info msg="exited without error"
+}
+
 func Example_timeout() {
 	ctx := baseContext()
 

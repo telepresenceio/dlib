@@ -160,6 +160,10 @@ type GroupConfig struct {
 	// zero value means to not force Wait() to return early.
 	HardShutdownTimeout time.Duration
 
+	// IgnoreSignalError ensures that Wait() discards any error
+	// generated when the signal handler receives a signal.
+	IgnoreSignalError bool
+
 	DisablePanicRecovery bool
 	DisableLogging       bool
 
@@ -309,7 +313,7 @@ func (g *Group) launchSupervisors() {
 				// stacktrace with the error, these are "expected" errors, and including stacktraces for
 				// them in the group's exit logging would just be noise.
 				if ctx.Err() == nil {
-					err := fmt.Errorf("received signal %v (triggering graceful shutdown)", sig)
+					err := derrgroup.NewSoftSignalError(sig, g.cfg.IgnoreSignalError)
 
 					g.goWorkerCtx(ctx, func(_ context.Context) error {
 						return err
@@ -317,7 +321,7 @@ func (g *Group) launchSupervisors() {
 					<-ctx.Done()
 
 				} else if dcontext.HardContext(ctx).Err() == nil {
-					err := fmt.Errorf("received signal %v (graceful shutdown already triggered; triggering not-so-graceful shutdown)", sig)
+					err := derrgroup.NewHardSignalError(sig)
 
 					if !g.cfg.DisableLogging {
 						dlog.Errorln(ctx, err)
