@@ -29,7 +29,7 @@ type connContextKey struct{}
 //
 // This wraps the server.Handler, so it should be called *after* setting up any Handler that might
 // Hijack() connections.
-func configureHijackTracking(server *http.Server) (close func(), wait func()) {
+func configureHijackTracking(server *http.Server) (closer func(), wait func()) {
 	var wg sync.WaitGroup
 
 	var mu sync.Mutex                            // protects 'hijackedConns'

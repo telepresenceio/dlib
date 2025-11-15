@@ -69,7 +69,7 @@ type ExitError = exec.ExitError
 var ErrNotFound = exec.ErrNotFound
 
 // LookPath is the os/exe.LookPath function.
-var LookPath = exec.LookPath
+var LookPath = exec.LookPath //nolint:gochecknoglobals // constant
 
 // Cmd represents an external command being prepared or run.
 //
@@ -210,7 +210,7 @@ func (c *Cmd) Start() error {
 						if !c.DisableLogging {
 							dlog.Print(c.ctx, "sending SIGINT")
 						}
-						_ = sigint.SendInterrupt(c.Cmd.Process)
+						_ = sigint.SendInterrupt(c.Process)
 					}
 				case <-c.waitDone:
 					// it exited on its own

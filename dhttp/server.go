@@ -393,7 +393,7 @@ func (sc *ServerConfig) ServeTLS(ctx context.Context, ln net.Listener, certFile,
 	return sc.serve(ctx, func(srv *http.Server) error { return srv.ServeTLS(ln, certFile, keyFile) })
 }
 
-// ListenAndServeTLS is like Serve, but rather than taking an existing Listener object, it takes a
+// ListenAndServe is like Serve, but rather than taking an existing Listener object, it takes a
 // TCP address to listen on.  If an empty address is given, then ":http" is used.
 func (sc *ServerConfig) ListenAndServe(ctx context.Context, addr string) error {
 	if addr == "" {

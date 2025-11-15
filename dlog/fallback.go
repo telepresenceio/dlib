@@ -43,6 +43,7 @@ func DefaultFieldSort(fieldNames []string) {
 
 var (
 	// This mimics logrus.New(), but with a .Formatter.SortingFunc that makes dexec look nicer.
+	//nolint:gochecknoglobals // constant
 	fallbackLogger Logger = WrapLogrus(&logrus.Logger{
 		Out: os.Stderr,
 		Formatter: &logrus.TextFormatter{
@@ -53,7 +54,7 @@ var (
 		ExitFunc:     os.Exit,
 		ReportCaller: false,
 	})
-	fallbackLoggerMu sync.RWMutex
+	fallbackLoggerMu sync.RWMutex //nolint:gochecknoglobals // intended
 )
 
 func getFallbackLogger() Logger {

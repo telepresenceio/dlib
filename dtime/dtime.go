@@ -17,7 +17,7 @@ package dtime
 
 import "time"
 
-var now = time.Now
+var now = time.Now //nolint:gochecknoglobals // constant
 
 // Now is a clock function. It starts out as an alias to time.Now,
 // so if you simply use dtime.Now instead of time.Now, your program
