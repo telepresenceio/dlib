@@ -3,22 +3,22 @@
 //
 // Given
 //
-//    softCtx := WithSoftness(hardCtx)
+//	softCtx := WithSoftness(hardCtx)
 //
 // then
 //
-//    // The soft Context being done signals the end of "normal
-//    // operation", and the program should initiate a graceful
-//    // shutdown; a "soft shutdown".  In other words, it means, "You
-//    // should start shutting down now."
-//    <-softCtx.Done()
+//	// The soft Context being done signals the end of "normal
+//	// operation", and the program should initiate a graceful
+//	// shutdown; a "soft shutdown".  In other words, it means, "You
+//	// should start shutting down now."
+//	<-softCtx.Done()
 //
-//    // The hard Context being done signals that the time for a
-//    // graceful shutdown has passed and that the program should
-//    // terminate *right now*, not-so-gracefully; a "hard shutdown".
-//    // In other words, it means, "If you haven't finished shutting
-//    // down yet, then you should hurry it up."
-//    <-HardContext(softCtx).Done()
+//	// The hard Context being done signals that the time for a
+//	// graceful shutdown has passed and that the program should
+//	// terminate *right now*, not-so-gracefully; a "hard shutdown".
+//	// In other words, it means, "If you haven't finished shutting
+//	// down yet, then you should hurry it up."
+//	<-HardContext(softCtx).Done()
 //
 // When writing code that makes use of a Context, which Context should you use,
 // the soft Context or the hard Context?
@@ -33,8 +33,7 @@
 // post-shutdown-initiated grace-period, it may be appropriate to use the hard
 // Context.
 //
-//
-// Design principles
+// # Design principles
 //
 // - The lifetimes of the various stages (normal operation, shutdown) should be
 // signaled with Contexts, rather than with bare channels.  Because each stage
@@ -72,9 +71,7 @@
 // drain).  Simple code with simple roughly instantaneous shutdown logic need
 // not be concerned about hard Contexts and shutdown getting cut short.
 //
-//
-//
-// Interfacing dcontext-aware code with dcontext-unaware code
+// # Interfacing dcontext-aware code with dcontext-unaware code
 //
 // When dcontext-aware code passes the soft Context to dcontext-unaware code,
 // then that callee code will shutdown at the beginning of the shutdown grace
@@ -127,7 +124,7 @@ type childHardContext struct {
 func (c childHardContext) Deadline() (deadline time.Time, ok bool) { return c.hardCtx.Deadline() }
 func (c childHardContext) Done() <-chan struct{}                   { return c.hardCtx.Done() }
 func (c childHardContext) Err() error                              { return c.hardCtx.Err() }
-func (c childHardContext) Value(key interface{}) interface{}       { return c.softCtx.Value(key) }
+func (c childHardContext) Value(key any) any                       { return c.softCtx.Value(key) }
 func (c childHardContext) String() string                          { return contextName(c.softCtx) + ".HardContext" }
 
 // HardContext takes a child Context that is canceled sooner (a "soft"

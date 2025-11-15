@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/datawire/dlib/dhttp"
+	"github.com/datawire/dlib/v2/dhttp"
 )
 
 func serverConfig(server *http.Server) (*dhttp.ServerConfig, error) {

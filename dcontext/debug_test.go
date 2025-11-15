@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/datawire/dlib/dcontext"
+	"github.com/datawire/dlib/v2/dcontext"
 )
 
 func TestDebug(t *testing.T) {
@@ -36,7 +36,7 @@ func TestDebug(t *testing.T) {
 		},
 		{"WithSoftness", func() { ctx = dcontext.WithSoftness(ctx) }, ""},
 		{"HardContext", func() { ctx = dcontext.HardContext(ctx) }, "HardContext"},
-		{"WithoutCancel", func() { ctx = dcontext.WithoutCancel(ctx) }, "WithoutCancel"},
+		{"WithoutCancel", func() { ctx = context.WithoutCancel(ctx) }, "WithoutCancel"},
 	}
 	t.Log(fmt.Sprint(ctx))
 	for _, tc := range testcases {

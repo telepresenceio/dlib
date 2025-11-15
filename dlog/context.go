@@ -4,7 +4,6 @@ package dlog
 
 import (
 	"context"
-	"fmt"
 	"log"
 )
 
@@ -50,7 +49,7 @@ func WithLogger(ctx context.Context, logger Logger) context.Context {
 // WithField returns a copy of ctx with the logger field key=value
 // associated with it, for future calls to
 // {Trace,Debug,Info,Print,Warn,Error}{f,ln,}() and StdLogger().
-func WithField(ctx context.Context, key string, value interface{}) context.Context {
+func WithField(ctx context.Context, key string, value any) context.Context {
 	return WithLogger(ctx, getLogger(ctx).WithField(key, value))
 }
 
@@ -75,41 +74,22 @@ func MaxLogLevel(ctx context.Context) LogLevel {
 	return LogLevelTrace
 }
 
-func sprintln(args ...interface{}) string {
-	// Trim the trailing newline; what we care about is that spaces are added in between
-	// arguments, not that there's a trailing newline.  See also: logrus.Entry.sprintlnn
-	msg := fmt.Sprintln(args...)
-	return msg[:len(msg)-1]
-}
-
 // If you change any of these, you should also change convenience.go.gen and run `make generate`.
 
-func Log(ctx context.Context, lvl LogLevel, args ...interface{}) {
+func Log(ctx context.Context, lvl LogLevel, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLog(lvl, args...)
-	} else {
-		l.Log(lvl, fmt.Sprint(args...))
-	}
+	l.Log(lvl, args...)
 }
 
-func Logln(ctx context.Context, lvl LogLevel, args ...interface{}) {
+func Logln(ctx context.Context, lvl LogLevel, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogln(lvl, args...)
-	} else {
-		l.Log(lvl, sprintln(args...))
-	}
+	l.Logln(lvl, args...)
 }
 
-func Logf(ctx context.Context, lvl LogLevel, format string, args ...interface{}) {
+func Logf(ctx context.Context, lvl LogLevel, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogf(lvl, format, args...)
-	} else {
-		l.Log(lvl, fmt.Sprintf(format, args...))
-	}
+	l.Logf(lvl, format, args...)
 }

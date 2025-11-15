@@ -15,16 +15,17 @@ package testenv
 
 import (
 	"errors"
-	exec "github.com/datawire/dlib/dexec"         // MODIFIED: FROM: "os/exec"
-	"github.com/datawire/dlib/dexec/internal/cfg" // MODIFIED: FROM: "internal/cfg"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	exec "github.com/datawire/dlib/v2/dexec"         // MODIFIED: FROM: "os/exec"
+	"github.com/datawire/dlib/v2/dexec/internal/cfg" // MODIFIED: FROM: "internal/cfg"
 )
 
-// HasGoBuild reports whether the current system can build programs with ``go build''
+// HasGoBuild reports whether the current system can build programs with “go build”
 // and then run them with os.StartProcess or exec.Command.
 func HasGoBuild() bool {
 	if os.Getenv("GO_GCFLAGS") != "" {
@@ -45,7 +46,7 @@ func HasGoBuild() bool {
 	return true
 }
 
-// MustHaveGoBuild checks that the current system can build programs with ``go build''
+// MustHaveGoBuild checks that the current system can build programs with “go build”
 // and then run them with os.StartProcess or exec.Command.
 // If not, MustHaveGoBuild calls t.Skip with an explanation.
 func MustHaveGoBuild(t testing.TB) {

@@ -15,7 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/datawire/dlib/dlog"
+	"github.com/datawire/dlib/v2/dlog"
 )
 
 var logPos struct {
@@ -199,50 +199,57 @@ func TestInvalidMaxLevel(t *testing.T) {
 
 type testLogEntry struct {
 	level   dlog.LogLevel
-	fields  map[string]interface{}
+	fields  map[string]any
 	message string
 }
 
 type testLog struct {
 	entries []testLogEntry
+	fields  map[string]any
 }
 
 type testLogger struct {
-	log    *testLog
-	fields map[string]interface{}
+	dlog.BaseLogger
 }
 
-func (l testLogger) Helper() {}
-func (l testLogger) WithField(key string, value interface{}) dlog.Logger {
-	ret := testLogger{
-		log:    l.log,
-		fields: make(map[string]interface{}, len(l.fields)+1),
+func newTestLogger(log *testLog) testLogger {
+	return testLogger{dlog.BaseLogger{GenericLogger: dlog.GenericImpl{PlainLogger: log}}}
+}
+
+func (l testLogger) WithField(key string, value any) dlog.Logger {
+	w := l.GenericLogger.(dlog.GenericImpl).PlainLogger.(*testLog)
+	ret := testLog{
+		entries: w.entries,
+		fields:  make(map[string]any, len(w.fields)+1),
 	}
-	for k, v := range l.fields {
+	for k, v := range w.fields {
 		ret.fields[k] = v
 	}
 	ret.fields[key] = value
-	return ret
+	return newTestLogger(&ret)
 }
-func (l testLogger) StdLogger(dlog.LogLevel) *log.Logger {
+
+func (l *testLog) StdLogger(dlog.LogLevel) *log.Logger {
 	panic("not implemented")
 }
 
-func (l testLogger) Log(lvl dlog.LogLevel, msg string) {
+func (l *testLog) Helper() {}
+
+func (l *testLog) LogMessage(lvl dlog.LogLevel, msg string) {
 	entry := testLogEntry{
 		level:   lvl,
 		message: msg,
-		fields:  make(map[string]interface{}, len(l.fields)),
+		fields:  make(map[string]any, len(l.fields)),
 	}
 	for k, v := range l.fields {
 		entry.fields[k] = v
 	}
-	l.log.entries = append(l.log.entries, entry)
+	l.entries = append(l.entries, entry)
 }
 
 func TestFormating(t *testing.T) {
-	funcs := []func(context.Context, ...interface{}){
-		func(ctx context.Context, args ...interface{}) { dlog.Log(ctx, dlog.LogLevelInfo, args...) },
+	funcs := []func(context.Context, ...any){
+		func(ctx context.Context, args ...any) { dlog.Log(ctx, dlog.LogLevelInfo, args...) },
 		dlog.Error,
 		dlog.Warn,
 		dlog.Info,
@@ -251,8 +258,8 @@ func TestFormating(t *testing.T) {
 		dlog.Print,
 		dlog.Warning,
 	}
-	funcsf := []func(context.Context, string, ...interface{}){
-		func(ctx context.Context, fmt string, args ...interface{}) {
+	funcsf := []func(context.Context, string, ...any){
+		func(ctx context.Context, fmt string, args ...any) {
 			dlog.Logf(ctx, dlog.LogLevelInfo, fmt, args...)
 		},
 		dlog.Errorf,
@@ -263,8 +270,8 @@ func TestFormating(t *testing.T) {
 		dlog.Printf,
 		dlog.Warningf,
 	}
-	funcsln := []func(context.Context, ...interface{}){
-		func(ctx context.Context, args ...interface{}) { dlog.Logln(ctx, dlog.LogLevelInfo, args...) },
+	funcsln := []func(context.Context, ...any){
+		func(ctx context.Context, args ...any) { dlog.Logln(ctx, dlog.LogLevelInfo, args...) },
 		dlog.Errorln,
 		dlog.Warnln,
 		dlog.Infoln,
@@ -275,21 +282,21 @@ func TestFormating(t *testing.T) {
 	}
 
 	var log testLog
-	ctx := dlog.WithLogger(context.Background(), testLogger{log: &log})
+	ctx := dlog.WithLogger(context.Background(), newTestLogger(&log))
 
 	testcases := []struct {
-		Funcs    interface{}
-		Args     []interface{}
+		Funcs    any
+		Args     []any
 		Expected string
 	}{
 		// tc 1
-		{Funcs: funcs, Args: []interface{}{ctx, "foo %s", "bar"}, Expected: "foo %sbar"},
-		{Funcs: funcsf, Args: []interface{}{ctx, "foo %s", "bar"}, Expected: "foo bar"},
-		{Funcs: funcsln, Args: []interface{}{ctx, "foo %s", "bar"}, Expected: "foo %s bar"},
+		{Funcs: funcs, Args: []any{ctx, "foo %s", "bar"}, Expected: "foo %sbar"},
+		{Funcs: funcsf, Args: []any{ctx, "foo %s", "bar"}, Expected: "foo bar"},
+		{Funcs: funcsln, Args: []any{ctx, "foo %s", "bar"}, Expected: "foo %s bar"},
 		// tc 2
-		{Funcs: funcs, Args: []interface{}{ctx, "foo\n"}, Expected: "foo\n"},
-		{Funcs: funcsf, Args: []interface{}{ctx, "foo\n"}, Expected: "foo\n"},
-		{Funcs: funcsln, Args: []interface{}{ctx, "foo\n"}, Expected: "foo\n"},
+		{Funcs: funcs, Args: []any{ctx, "foo\n"}, Expected: "foo\n"},
+		{Funcs: funcsf, Args: []any{ctx, "foo\n"}, Expected: "foo\n"},
+		{Funcs: funcsln, Args: []any{ctx, "foo\n"}, Expected: "foo\n"},
 	}
 	cnt := 0
 	for i, tc := range testcases {
@@ -322,7 +329,7 @@ func TestFormating(t *testing.T) {
 
 func TestFallbackLogger(t *testing.T) {
 	var log testLog
-	dlog.SetFallbackLogger(testLogger{log: &log})
+	dlog.SetFallbackLogger(newTestLogger(&log))
 	// Create a new context off the background to make sure it resorts to the fallback
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
