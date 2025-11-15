@@ -4,7 +4,6 @@ package dlog
 
 import (
 	"context"
-	"fmt"
 )
 
 // Logger is an extended interface with specific functions for each level. It is modeled
@@ -132,7 +131,7 @@ type Logger interface {
 }
 
 func (l BaseLogger) WithField(key string, value any) Logger {
-	panic(fmt.Sprintf("WithField is not implemented by %T", l))
+	return l
 }
 
 func (l BaseLogger) Error(args ...any) {

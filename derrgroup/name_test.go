@@ -12,7 +12,7 @@ import (
 
 func TestNameCollision(t *testing.T) {
 	assert := assert.New(t)
-	group := new(derrgroup.Group)
+	group := derrgroup.NewGroup(nil, false)
 	group.Go("foo", func() error { return nil })
 	assert.NoError(group.Wait())
 	group.Go("bar", func() error { return nil })

@@ -119,7 +119,7 @@
 	}
 
 	func (l BaseLogger) WithField(key string, value any) Logger {
-		panic(fmt.Sprintf("WithField is not implemented by %T", l))
+		return l
 	}
 	EOT
 	for lvl in "${levels[@]}"; do

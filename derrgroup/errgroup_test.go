@@ -117,7 +117,7 @@ func TestZeroGroup(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		g := new(errgroup.Group)
+		g := errgroup.NewGroup(nil, false)
 
 		var firstErr error
 		for i, err := range tc.errs {
