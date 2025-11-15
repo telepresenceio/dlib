@@ -72,7 +72,7 @@ var _ featurefulError = panicError{}
 //
 // If the input is anything else, it is formatted with "%+v" and
 // returned as an error with a stack trace attached.
-func PanicToError(rec interface{}) error {
+func PanicToError(rec any) error {
 	if rec == nil {
 		return nil
 	}

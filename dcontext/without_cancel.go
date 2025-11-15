@@ -13,7 +13,7 @@ func (withoutCancel) Deadline() (deadline time.Time, ok bool) { return }
 func (withoutCancel) Done() <-chan struct{}                   { return nil }
 func (withoutCancel) Err() error                              { return nil }
 func (c withoutCancel) String() string                        { return contextName(c.Context) + ".WithoutCancel" }
-func (c withoutCancel) Value(key interface{}) interface{} {
+func (c withoutCancel) Value(key any) any {
 	if key == (parentHardContextKey{}) {
 		return nil
 	}

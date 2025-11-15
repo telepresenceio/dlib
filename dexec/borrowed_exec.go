@@ -15,7 +15,7 @@ import (
 
 // interfaceEqual protects against panics from doing equality tests on
 // two interfaces with non-comparable underlying types.
-func interfaceEqual(a, b interface{}) bool {
+func interfaceEqual(a, b any) bool {
 	defer func() {
 		recover()
 	}()

@@ -15,9 +15,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	exec "github.com/datawire/dlib/dexec"             // MODIFIED: FROM: "os/exec"
-	"github.com/datawire/dlib/dexec/internal/poll"    // MODIFIED: FROM: "internal/poll"
-	"github.com/datawire/dlib/dexec/internal/testenv" // MODIFIED: FROM: "internal/testenv"
 	"io"
 	"io/ioutil"
 	"log"
@@ -31,6 +28,10 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	exec "github.com/datawire/dlib/dexec"             // MODIFIED: FROM: "os/exec"
+	"github.com/datawire/dlib/dexec/internal/poll"    // MODIFIED: FROM: "internal/poll"
+	"github.com/datawire/dlib/dexec/internal/testenv" // MODIFIED: FROM: "internal/testenv"
 
 	"github.com/datawire/dlib/dlog" // MODIFIED: ADDED
 )
@@ -785,7 +786,7 @@ func TestHelperProcess(*testing.T) {
 	cmd, args := args[0], args[1:]
 	switch cmd {
 	case "echo":
-		iargs := []interface{}{}
+		iargs := []any{}
 		for _, s := range args {
 			iargs = append(iargs, s)
 		}

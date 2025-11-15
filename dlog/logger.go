@@ -42,7 +42,7 @@ type Logger interface {
 	// WithField returns a copy of the logger with the
 	// structured-logging field key=value associated with it, for
 	// future calls to .Log().
-	WithField(key string, value interface{}) Logger
+	WithField(key string, value any) Logger
 
 	// StdLogger returns a stdlib *log.Logger that writes to this
 	// Logger at the specified loglevel; for use with external
@@ -70,18 +70,18 @@ type OptimizedLogger interface {
 	// formatted using the default formats for its operands and
 	// adds spaces between operands when neither is a string; in
 	// the manner of fmt.Print().
-	UnformattedLog(level LogLevel, args ...interface{})
+	UnformattedLog(level LogLevel, args ...any)
 
 	// UnformattedLogln formats then logs a message.  The message
 	// is formatted using the default formats for its operands and
 	// always adds spaces between operands; in the manner of
 	// fmt.Println() but without appending a newline.
-	UnformattedLogln(level LogLevel, args ...interface{})
+	UnformattedLogln(level LogLevel, args ...any)
 
 	// UnformattedLogf formats then logs a message.  The message is
 	// formatted according to the format specifier; in the manner
 	// of fmt.Printf().
-	UnformattedLogf(level LogLevel, format string, args ...interface{})
+	UnformattedLogf(level LogLevel, format string, args ...any)
 }
 
 // LoggerWithMaxLevel can be implemented by loggers that define a maximum
@@ -101,9 +101,9 @@ type OptimizedLogger interface {
 // 2. A concern about performance degradation in existing implementations
 // when checks like:
 //
-//      if opt, ok := l.(OptimizedLogger); ok {
-//          ...
-//      }
+//	if opt, ok := l.(OptimizedLogger); ok {
+//	    ...
+//	}
 //
 // no longer detect implementations that lack the MaxLevel method and
 // silently choose a non-optimized approach.

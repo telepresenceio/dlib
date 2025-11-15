@@ -28,7 +28,7 @@
 		local lvlReal=$2
 		# If you change any of these, you should also change context.go.
 		cat <<-EOT
-		func ${lvlAlias}(ctx context.Context, args ...interface{}) {
+		func ${lvlAlias}(ctx context.Context, args ...any) {
 			l := getLogger(ctx)
 			l.Helper()
 			if opt, ok := l.(OptimizedLogger); ok {
@@ -37,7 +37,7 @@
 				l.Log(LogLevel${lvlReal}, fmt.Sprint(args...))
 			}
 		}
-		func ${lvlAlias}ln(ctx context.Context, args ...interface{}) {
+		func ${lvlAlias}ln(ctx context.Context, args ...any) {
 			l := getLogger(ctx)
 			l.Helper()
 			if opt, ok := l.(OptimizedLogger); ok {
@@ -46,7 +46,7 @@
 				l.Log(LogLevel${lvlReal}, sprintln(args...))
 			}
 		}
-		func ${lvlAlias}f(ctx context.Context, format string, args ...interface{}) {
+		func ${lvlAlias}f(ctx context.Context, format string, args ...any) {
 			l := getLogger(ctx)
 			l.Helper()
 			if opt, ok := l.(OptimizedLogger); ok {

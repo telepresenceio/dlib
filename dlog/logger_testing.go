@@ -16,13 +16,13 @@ type tbWrapper struct {
 	testing.TB
 	failOnError   bool
 	logTimestamps bool
-	fields        map[string]interface{}
+	fields        map[string]any
 }
 
-func (w tbWrapper) WithField(key string, value interface{}) Logger {
+func (w tbWrapper) WithField(key string, value any) Logger {
 	ret := tbWrapper{
 		TB:     w.TB,
-		fields: make(map[string]interface{}, len(w.fields)+1),
+		fields: make(map[string]any, len(w.fields)+1),
 	}
 	for k, v := range w.fields {
 		ret.fields[k] = v
@@ -33,7 +33,7 @@ func (w tbWrapper) WithField(key string, value interface{}) Logger {
 
 func (w tbWrapper) Log(level LogLevel, msg string) {
 	w.Helper()
-	fields := make(map[string]interface{}, len(w.fields)+2)
+	fields := make(map[string]any, len(w.fields)+2)
 	for k, v := range w.fields {
 		fields[k] = v
 	}
@@ -92,7 +92,7 @@ func WrapTB(in testing.TB, failOnError bool) Logger {
 func wrapTB(in testing.TB, opts ...TestContextOption) Logger {
 	wrapper := tbWrapper{
 		TB:            in,
-		fields:        map[string]interface{}{},
+		fields:        map[string]any{},
 		logTimestamps: true,
 	}
 	for _, opt := range opts {

@@ -12,7 +12,7 @@ import (
 	"github.com/datawire/dlib/dlog"
 )
 
-func assertDurationEq(t testing.TB, expected, actual, slop time.Duration, msgAndArgs ...interface{}) bool {
+func assertDurationEq(t testing.TB, expected, actual, slop time.Duration, msgAndArgs ...any) bool {
 	t.Helper()
 
 	diff := expected - actual
@@ -60,10 +60,10 @@ func TestSleep(t *testing.T) {
 			actual := time.Since(start)
 
 			slop := 10 * time.Millisecond
-			switch  runtime.GOOS {
+			switch runtime.GOOS {
 			case "darwin":
 				slop *= 15 // Perhaps just CircleCI being bad, not darwin in general?
-			case "windows" :
+			case "windows":
 				slop *= 10 // Be forgiving of running in a VM
 			}
 			assertDurationEq(t, tcinfo.Expected, actual, slop)

@@ -50,7 +50,7 @@ func WithLogger(ctx context.Context, logger Logger) context.Context {
 // WithField returns a copy of ctx with the logger field key=value
 // associated with it, for future calls to
 // {Trace,Debug,Info,Print,Warn,Error}{f,ln,}() and StdLogger().
-func WithField(ctx context.Context, key string, value interface{}) context.Context {
+func WithField(ctx context.Context, key string, value any) context.Context {
 	return WithLogger(ctx, getLogger(ctx).WithField(key, value))
 }
 
@@ -75,7 +75,7 @@ func MaxLogLevel(ctx context.Context) LogLevel {
 	return LogLevelTrace
 }
 
-func sprintln(args ...interface{}) string {
+func sprintln(args ...any) string {
 	// Trim the trailing newline; what we care about is that spaces are added in between
 	// arguments, not that there's a trailing newline.  See also: logrus.Entry.sprintlnn
 	msg := fmt.Sprintln(args...)
@@ -84,7 +84,7 @@ func sprintln(args ...interface{}) string {
 
 // If you change any of these, you should also change convenience.go.gen and run `make generate`.
 
-func Log(ctx context.Context, lvl LogLevel, args ...interface{}) {
+func Log(ctx context.Context, lvl LogLevel, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -94,7 +94,7 @@ func Log(ctx context.Context, lvl LogLevel, args ...interface{}) {
 	}
 }
 
-func Logln(ctx context.Context, lvl LogLevel, args ...interface{}) {
+func Logln(ctx context.Context, lvl LogLevel, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -104,7 +104,7 @@ func Logln(ctx context.Context, lvl LogLevel, args ...interface{}) {
 	}
 }
 
-func Logf(ctx context.Context, lvl LogLevel, format string, args ...interface{}) {
+func Logf(ctx context.Context, lvl LogLevel, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {

@@ -10,11 +10,11 @@
 // does not have a notion of dependencies.  Not having a notion of
 // dependencies implies a few things:
 //
-//  - it does not have a notion of "readiness", as it doesn't have any
-//    dependents that would block on a goroutine becoming ready
-//  - it launches worker goroutines right away when you call .Go(), as
-//    it doesn't have any dependencies that would block the worker
-//    from starting
+//   - it does not have a notion of "readiness", as it doesn't have any
+//     dependents that would block on a goroutine becoming ready
+//   - it launches worker goroutines right away when you call .Go(), as
+//     it doesn't have any dependencies that would block the worker
+//     from starting
 //
 // So, if you need to enforce ordering requirements during goroutine
 // startup and shutdown, then (for now, anyway) you'll need to
@@ -47,15 +47,15 @@ import (
 // bog-standard "golang.org/x/sync/errgroup.Group"), the things that
 // make dgroup attractive are:
 //
-//  - (optionally) handles SIGINT and SIGTERM
-//  - (configurable) manages Context for you
-//  - (optionally) adds hard/soft cancellation
-//  - (optionally) does panic recovery
-//  - (optionally) does some minimal logging
-//  - (optionally) adds configurable shutdown timeouts
-//  - a concept of goroutine names
-//  - adds a way to call to the parent group, making it possible to
-//    launch a "sibling" goroutine
+//   - (optionally) handles SIGINT and SIGTERM
+//   - (configurable) manages Context for you
+//   - (optionally) adds hard/soft cancellation
+//   - (optionally) does panic recovery
+//   - (optionally) does some minimal logging
+//   - (optionally) adds configurable shutdown timeouts
+//   - a concept of goroutine names
+//   - adds a way to call to the parent group, making it possible to
+//     launch a "sibling" goroutine
 //
 // A zero Group is NOT valid; a Group must be created with NewGroup.
 //
@@ -78,7 +78,7 @@ type Group struct {
 func logGoroutineStatuses(
 	ctx context.Context,
 	heading string,
-	printf func(ctx context.Context, format string, args ...interface{}),
+	printf func(ctx context.Context, format string, args ...any),
 	list map[string]derrgroup.GoroutineState,
 ) {
 	printf(ctx, "  %s:", heading)
@@ -101,7 +101,7 @@ var stacktraceForTesting string
 func logGoroutineTraces(
 	ctx context.Context,
 	heading string,
-	printf func(ctx context.Context, format string, args ...interface{}),
+	printf func(ctx context.Context, format string, args ...any),
 ) {
 	stacktrace := new(strings.Builder)
 	if stacktraceForTesting != "" {
@@ -396,13 +396,13 @@ func (g *Group) goWorkerCtx(ctx context.Context, fn func(ctx context.Context) er
 // "supervisor" goroutines have a few important differences and
 // additional requirements:
 //
-//  - They MUST monitor the g.waitFinished channel, and MUST finish
-//    quickly after that channel is closed.
-//  - They MUST not panic, as we don't bother to set up panic recovery
-//    for them.
-//  - The cfg.WorkerContext() callback is not called.
-//  - Being a "systems" thing, they must be robust and CANNOT fail; so
-//    they don't get to return an error.
+//   - They MUST monitor the g.waitFinished channel, and MUST finish
+//     quickly after that channel is closed.
+//   - They MUST not panic, as we don't bother to set up panic recovery
+//     for them.
+//   - The cfg.WorkerContext() callback is not called.
+//   - Being a "systems" thing, they must be robust and CANNOT fail; so
+//     they don't get to return an error.
 func (g *Group) goSupervisor(name string, fn func(ctx context.Context)) {
 	ctx := WithGoroutineName(g.baseCtx, ":"+name)
 	g.goSupervisorCtx(ctx, fn)

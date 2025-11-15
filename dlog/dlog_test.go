@@ -199,7 +199,7 @@ func TestInvalidMaxLevel(t *testing.T) {
 
 type testLogEntry struct {
 	level   dlog.LogLevel
-	fields  map[string]interface{}
+	fields  map[string]any
 	message string
 }
 
@@ -209,14 +209,14 @@ type testLog struct {
 
 type testLogger struct {
 	log    *testLog
-	fields map[string]interface{}
+	fields map[string]any
 }
 
 func (l testLogger) Helper() {}
-func (l testLogger) WithField(key string, value interface{}) dlog.Logger {
+func (l testLogger) WithField(key string, value any) dlog.Logger {
 	ret := testLogger{
 		log:    l.log,
-		fields: make(map[string]interface{}, len(l.fields)+1),
+		fields: make(map[string]any, len(l.fields)+1),
 	}
 	for k, v := range l.fields {
 		ret.fields[k] = v
@@ -232,7 +232,7 @@ func (l testLogger) Log(lvl dlog.LogLevel, msg string) {
 	entry := testLogEntry{
 		level:   lvl,
 		message: msg,
-		fields:  make(map[string]interface{}, len(l.fields)),
+		fields:  make(map[string]any, len(l.fields)),
 	}
 	for k, v := range l.fields {
 		entry.fields[k] = v
@@ -241,8 +241,8 @@ func (l testLogger) Log(lvl dlog.LogLevel, msg string) {
 }
 
 func TestFormating(t *testing.T) {
-	funcs := []func(context.Context, ...interface{}){
-		func(ctx context.Context, args ...interface{}) { dlog.Log(ctx, dlog.LogLevelInfo, args...) },
+	funcs := []func(context.Context, ...any){
+		func(ctx context.Context, args ...any) { dlog.Log(ctx, dlog.LogLevelInfo, args...) },
 		dlog.Error,
 		dlog.Warn,
 		dlog.Info,
@@ -251,8 +251,8 @@ func TestFormating(t *testing.T) {
 		dlog.Print,
 		dlog.Warning,
 	}
-	funcsf := []func(context.Context, string, ...interface{}){
-		func(ctx context.Context, fmt string, args ...interface{}) {
+	funcsf := []func(context.Context, string, ...any){
+		func(ctx context.Context, fmt string, args ...any) {
 			dlog.Logf(ctx, dlog.LogLevelInfo, fmt, args...)
 		},
 		dlog.Errorf,
@@ -263,8 +263,8 @@ func TestFormating(t *testing.T) {
 		dlog.Printf,
 		dlog.Warningf,
 	}
-	funcsln := []func(context.Context, ...interface{}){
-		func(ctx context.Context, args ...interface{}) { dlog.Logln(ctx, dlog.LogLevelInfo, args...) },
+	funcsln := []func(context.Context, ...any){
+		func(ctx context.Context, args ...any) { dlog.Logln(ctx, dlog.LogLevelInfo, args...) },
 		dlog.Errorln,
 		dlog.Warnln,
 		dlog.Infoln,
@@ -278,18 +278,18 @@ func TestFormating(t *testing.T) {
 	ctx := dlog.WithLogger(context.Background(), testLogger{log: &log})
 
 	testcases := []struct {
-		Funcs    interface{}
-		Args     []interface{}
+		Funcs    any
+		Args     []any
 		Expected string
 	}{
 		// tc 1
-		{Funcs: funcs, Args: []interface{}{ctx, "foo %s", "bar"}, Expected: "foo %sbar"},
-		{Funcs: funcsf, Args: []interface{}{ctx, "foo %s", "bar"}, Expected: "foo bar"},
-		{Funcs: funcsln, Args: []interface{}{ctx, "foo %s", "bar"}, Expected: "foo %s bar"},
+		{Funcs: funcs, Args: []any{ctx, "foo %s", "bar"}, Expected: "foo %sbar"},
+		{Funcs: funcsf, Args: []any{ctx, "foo %s", "bar"}, Expected: "foo bar"},
+		{Funcs: funcsln, Args: []any{ctx, "foo %s", "bar"}, Expected: "foo %s bar"},
 		// tc 2
-		{Funcs: funcs, Args: []interface{}{ctx, "foo\n"}, Expected: "foo\n"},
-		{Funcs: funcsf, Args: []interface{}{ctx, "foo\n"}, Expected: "foo\n"},
-		{Funcs: funcsln, Args: []interface{}{ctx, "foo\n"}, Expected: "foo\n"},
+		{Funcs: funcs, Args: []any{ctx, "foo\n"}, Expected: "foo\n"},
+		{Funcs: funcsf, Args: []any{ctx, "foo\n"}, Expected: "foo\n"},
+		{Funcs: funcsln, Args: []any{ctx, "foo\n"}, Expected: "foo\n"},
 	}
 	cnt := 0
 	for i, tc := range testcases {

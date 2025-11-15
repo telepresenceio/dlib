@@ -161,7 +161,7 @@ func TestOutputErrors(t *testing.T) {
 			if tcData.ExpectedErr == "" {
 				assert.NoError(t, actualErr)
 				var expectedLog strings.Builder
-				err = tmpl.Execute(&expectedLog, map[string]interface{}{
+				err = tmpl.Execute(&expectedLog, map[string]any{
 					"PID":    cmd.ProcessState.Pid(),
 					"Stream": tcData.ExpectedStream,
 				})
@@ -211,7 +211,7 @@ func TestLogging(t *testing.T) {
 
 			if tmpl, err := template.New("expected.txt").Parse(tcData.ExpectedOutput); assert.NoError(t, err) {
 				var expectedLog strings.Builder
-				err = tmpl.Execute(&expectedLog, map[string]interface{}{
+				err = tmpl.Execute(&expectedLog, map[string]any{
 					"PID": cmd.ProcessState.Pid(),
 				})
 				if assert.NoError(t, err) {

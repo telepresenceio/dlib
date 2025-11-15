@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-func Error(ctx context.Context, args ...interface{}) {
+func Error(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -16,7 +16,7 @@ func Error(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelError, fmt.Sprint(args...))
 	}
 }
-func Errorln(ctx context.Context, args ...interface{}) {
+func Errorln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -25,7 +25,7 @@ func Errorln(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelError, sprintln(args...))
 	}
 }
-func Errorf(ctx context.Context, format string, args ...interface{}) {
+func Errorf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -34,7 +34,7 @@ func Errorf(ctx context.Context, format string, args ...interface{}) {
 		l.Log(LogLevelError, fmt.Sprintf(format, args...))
 	}
 }
-func Warn(ctx context.Context, args ...interface{}) {
+func Warn(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -43,7 +43,7 @@ func Warn(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelWarn, fmt.Sprint(args...))
 	}
 }
-func Warnln(ctx context.Context, args ...interface{}) {
+func Warnln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -52,7 +52,7 @@ func Warnln(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelWarn, sprintln(args...))
 	}
 }
-func Warnf(ctx context.Context, format string, args ...interface{}) {
+func Warnf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -61,7 +61,7 @@ func Warnf(ctx context.Context, format string, args ...interface{}) {
 		l.Log(LogLevelWarn, fmt.Sprintf(format, args...))
 	}
 }
-func Info(ctx context.Context, args ...interface{}) {
+func Info(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -70,7 +70,7 @@ func Info(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelInfo, fmt.Sprint(args...))
 	}
 }
-func Infoln(ctx context.Context, args ...interface{}) {
+func Infoln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -79,7 +79,7 @@ func Infoln(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelInfo, sprintln(args...))
 	}
 }
-func Infof(ctx context.Context, format string, args ...interface{}) {
+func Infof(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -88,7 +88,7 @@ func Infof(ctx context.Context, format string, args ...interface{}) {
 		l.Log(LogLevelInfo, fmt.Sprintf(format, args...))
 	}
 }
-func Debug(ctx context.Context, args ...interface{}) {
+func Debug(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -97,7 +97,7 @@ func Debug(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelDebug, fmt.Sprint(args...))
 	}
 }
-func Debugln(ctx context.Context, args ...interface{}) {
+func Debugln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -106,7 +106,7 @@ func Debugln(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelDebug, sprintln(args...))
 	}
 }
-func Debugf(ctx context.Context, format string, args ...interface{}) {
+func Debugf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -115,7 +115,7 @@ func Debugf(ctx context.Context, format string, args ...interface{}) {
 		l.Log(LogLevelDebug, fmt.Sprintf(format, args...))
 	}
 }
-func Trace(ctx context.Context, args ...interface{}) {
+func Trace(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -124,7 +124,7 @@ func Trace(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelTrace, fmt.Sprint(args...))
 	}
 }
-func Traceln(ctx context.Context, args ...interface{}) {
+func Traceln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -133,7 +133,7 @@ func Traceln(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelTrace, sprintln(args...))
 	}
 }
-func Tracef(ctx context.Context, format string, args ...interface{}) {
+func Tracef(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -142,7 +142,7 @@ func Tracef(ctx context.Context, format string, args ...interface{}) {
 		l.Log(LogLevelTrace, fmt.Sprintf(format, args...))
 	}
 }
-func Print(ctx context.Context, args ...interface{}) {
+func Print(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -151,7 +151,7 @@ func Print(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelInfo, fmt.Sprint(args...))
 	}
 }
-func Println(ctx context.Context, args ...interface{}) {
+func Println(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -160,7 +160,7 @@ func Println(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelInfo, sprintln(args...))
 	}
 }
-func Printf(ctx context.Context, format string, args ...interface{}) {
+func Printf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -169,7 +169,7 @@ func Printf(ctx context.Context, format string, args ...interface{}) {
 		l.Log(LogLevelInfo, fmt.Sprintf(format, args...))
 	}
 }
-func Warning(ctx context.Context, args ...interface{}) {
+func Warning(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -178,7 +178,7 @@ func Warning(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelWarn, fmt.Sprint(args...))
 	}
 }
-func Warningln(ctx context.Context, args ...interface{}) {
+func Warningln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
@@ -187,7 +187,7 @@ func Warningln(ctx context.Context, args ...interface{}) {
 		l.Log(LogLevelWarn, sprintln(args...))
 	}
 }
-func Warningf(ctx context.Context, format string, args ...interface{}) {
+func Warningf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
 	if opt, ok := l.(OptimizedLogger); ok {
