@@ -7,192 +7,361 @@ import (
 	"fmt"
 )
 
+// Logger is an extended interface with specific functions for each level. It is modeled
+// after the logrus.FieldLogger, but does not include Fatal or Panic logging options.	Do
+// proper error handling!	Return those errors!
+type Logger interface {
+	GenericLogger
+
+	// WithField returns a copy of the logger with the
+	// structured-logging field key=value associated with it, for
+	// future calls to .Log().
+	WithField(key string, value any) Logger
+
+	// Error formats then logs a message if the logger's MaxLevel is >= LogLevelError.
+	// The message is formatted using the default formats for its operands and adds
+	// spaces between operands when neither is a string; in the manner of fmt.Print().
+	Error(args ...any)
+
+	// Errorf formats then logs a message if the logger's MaxLevel is >= LogLevelError.
+	// The message is formatted according to the format specifier; in the manner of
+	// fmt.Printf().
+	Errorf(fmt string, args ...any)
+
+	// Errorln formats then logs a message if the logger's MaxLevel is >= LogLevelError.
+	// The message is formatted using the default formats for its operands and always
+	// adds spaces between operands; in the manner of fmt.Println() but without appending
+	// a newline.
+	Errorln(args ...any)
+
+	// Warn formats then logs a message if the logger's MaxLevel is >= LogLevelWarn.
+	// The message is formatted using the default formats for its operands and adds
+	// spaces between operands when neither is a string; in the manner of fmt.Print().
+	Warn(args ...any)
+
+	// Warnf formats then logs a message if the logger's MaxLevel is >= LogLevelWarn.
+	// The message is formatted according to the format specifier; in the manner of
+	// fmt.Printf().
+	Warnf(fmt string, args ...any)
+
+	// Warnln formats then logs a message if the logger's MaxLevel is >= LogLevelWarn.
+	// The message is formatted using the default formats for its operands and always
+	// adds spaces between operands; in the manner of fmt.Println() but without appending
+	// a newline.
+	Warnln(args ...any)
+
+	// Info formats then logs a message if the logger's MaxLevel is >= LogLevelInfo.
+	// The message is formatted using the default formats for its operands and adds
+	// spaces between operands when neither is a string; in the manner of fmt.Print().
+	Info(args ...any)
+
+	// Infof formats then logs a message if the logger's MaxLevel is >= LogLevelInfo.
+	// The message is formatted according to the format specifier; in the manner of
+	// fmt.Printf().
+	Infof(fmt string, args ...any)
+
+	// Infoln formats then logs a message if the logger's MaxLevel is >= LogLevelInfo.
+	// The message is formatted using the default formats for its operands and always
+	// adds spaces between operands; in the manner of fmt.Println() but without appending
+	// a newline.
+	Infoln(args ...any)
+
+	// Debug formats then logs a message if the logger's MaxLevel is >= LogLevelDebug.
+	// The message is formatted using the default formats for its operands and adds
+	// spaces between operands when neither is a string; in the manner of fmt.Print().
+	Debug(args ...any)
+
+	// Debugf formats then logs a message if the logger's MaxLevel is >= LogLevelDebug.
+	// The message is formatted according to the format specifier; in the manner of
+	// fmt.Printf().
+	Debugf(fmt string, args ...any)
+
+	// Debugln formats then logs a message if the logger's MaxLevel is >= LogLevelDebug.
+	// The message is formatted using the default formats for its operands and always
+	// adds spaces between operands; in the manner of fmt.Println() but without appending
+	// a newline.
+	Debugln(args ...any)
+
+	// Trace formats then logs a message if the logger's MaxLevel is >= LogLevelTrace.
+	// The message is formatted using the default formats for its operands and adds
+	// spaces between operands when neither is a string; in the manner of fmt.Print().
+	Trace(args ...any)
+
+	// Tracef formats then logs a message if the logger's MaxLevel is >= LogLevelTrace.
+	// The message is formatted according to the format specifier; in the manner of
+	// fmt.Printf().
+	Tracef(fmt string, args ...any)
+
+	// Traceln formats then logs a message if the logger's MaxLevel is >= LogLevelTrace.
+	// The message is formatted using the default formats for its operands and always
+	// adds spaces between operands; in the manner of fmt.Println() but without appending
+	// a newline.
+	Traceln(args ...any)
+
+	// Print formats then logs a message if the logger's MaxLevel is >= LogLevelInfo.
+	// The message is formatted using the default formats for its operands and adds
+	// spaces between operands when neither is a string; in the manner of fmt.Print().
+	Print(args ...any)
+
+	// Printf formats then logs a message if the logger's MaxLevel is >= LogLevelInfo.
+	// The message is formatted according to the format specifier; in the manner of
+	// fmt.Printf().
+	Printf(fmt string, args ...any)
+
+	// Println formats then logs a message if the logger's MaxLevel is >= LogLevelInfo.
+	// The message is formatted using the default formats for its operands and always
+	// adds spaces between operands; in the manner of fmt.Println() but without appending
+	// a newline.
+	Println(args ...any)
+
+	// Warning formats then logs a message if the logger's MaxLevel is >= LogLevelWarn.
+	// The message is formatted using the default formats for its operands and adds
+	// spaces between operands when neither is a string; in the manner of fmt.Print().
+	Warning(args ...any)
+
+	// Warningf formats then logs a message if the logger's MaxLevel is >= LogLevelWarn.
+	// The message is formatted according to the format specifier; in the manner of
+	// fmt.Printf().
+	Warningf(fmt string, args ...any)
+
+	// Warningln formats then logs a message if the logger's MaxLevel is >= LogLevelWarn.
+	// The message is formatted using the default formats for its operands and always
+	// adds spaces between operands; in the manner of fmt.Println() but without appending
+	// a newline.
+	Warningln(args ...any)
+}
+
+func (l BaseLogger) WithField(key string, value any) Logger {
+	panic(fmt.Sprintf("WithField is not implemented by %T", l))
+}
+
+func (l BaseLogger) Error(args ...any) {
+	l.Helper()
+	l.Log(LogLevelError, args...)
+}
+
+func (l BaseLogger) Errorf(format string, args ...any) {
+	l.Helper()
+	l.Logf(LogLevelError, format, args...)
+}
+
+func (l BaseLogger) Errorln(args ...any) {
+	l.Helper()
+	l.Logln(LogLevelError, args...)
+}
+
+func (l BaseLogger) Warn(args ...any) {
+	l.Helper()
+	l.Log(LogLevelWarn, args...)
+}
+
+func (l BaseLogger) Warnf(format string, args ...any) {
+	l.Helper()
+	l.Logf(LogLevelWarn, format, args...)
+}
+
+func (l BaseLogger) Warnln(args ...any) {
+	l.Helper()
+	l.Logln(LogLevelWarn, args...)
+}
+
+func (l BaseLogger) Info(args ...any) {
+	l.Helper()
+	l.Log(LogLevelInfo, args...)
+}
+
+func (l BaseLogger) Infof(format string, args ...any) {
+	l.Helper()
+	l.Logf(LogLevelInfo, format, args...)
+}
+
+func (l BaseLogger) Infoln(args ...any) {
+	l.Helper()
+	l.Logln(LogLevelInfo, args...)
+}
+
+func (l BaseLogger) Debug(args ...any) {
+	l.Helper()
+	l.Log(LogLevelDebug, args...)
+}
+
+func (l BaseLogger) Debugf(format string, args ...any) {
+	l.Helper()
+	l.Logf(LogLevelDebug, format, args...)
+}
+
+func (l BaseLogger) Debugln(args ...any) {
+	l.Helper()
+	l.Logln(LogLevelDebug, args...)
+}
+
+func (l BaseLogger) Trace(args ...any) {
+	l.Helper()
+	l.Log(LogLevelTrace, args...)
+}
+
+func (l BaseLogger) Tracef(format string, args ...any) {
+	l.Helper()
+	l.Logf(LogLevelTrace, format, args...)
+}
+
+func (l BaseLogger) Traceln(args ...any) {
+	l.Helper()
+	l.Logln(LogLevelTrace, args...)
+}
+
+func (l BaseLogger) Print(args ...any) {
+	l.Helper()
+	l.Log(LogLevelInfo, args...)
+}
+
+func (l BaseLogger) Printf(format string, args ...any) {
+	l.Helper()
+	l.Logf(LogLevelInfo, format, args...)
+}
+
+func (l BaseLogger) Println(args ...any) {
+	l.Helper()
+	l.Logln(LogLevelInfo, args...)
+}
+
+func (l BaseLogger) Warning(args ...any) {
+	l.Helper()
+	l.Log(LogLevelWarn, args...)
+}
+
+func (l BaseLogger) Warningf(format string, args ...any) {
+	l.Helper()
+	l.Logf(LogLevelWarn, format, args...)
+}
+
+func (l BaseLogger) Warningln(args ...any) {
+	l.Helper()
+	l.Logln(LogLevelWarn, args...)
+}
+
 func Error(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLog(LogLevelError, args...)
-	} else {
-		l.Log(LogLevelError, fmt.Sprint(args...))
-	}
+	l.Error(args...)
 }
+
 func Errorln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogln(LogLevelError, args...)
-	} else {
-		l.Log(LogLevelError, sprintln(args...))
-	}
+	l.Errorln(args...)
 }
+
 func Errorf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogf(LogLevelError, format, args...)
-	} else {
-		l.Log(LogLevelError, fmt.Sprintf(format, args...))
-	}
+	l.Errorf(format, args...)
 }
+
 func Warn(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLog(LogLevelWarn, args...)
-	} else {
-		l.Log(LogLevelWarn, fmt.Sprint(args...))
-	}
+	l.Warn(args...)
 }
+
 func Warnln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogln(LogLevelWarn, args...)
-	} else {
-		l.Log(LogLevelWarn, sprintln(args...))
-	}
+	l.Warnln(args...)
 }
+
 func Warnf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogf(LogLevelWarn, format, args...)
-	} else {
-		l.Log(LogLevelWarn, fmt.Sprintf(format, args...))
-	}
+	l.Warnf(format, args...)
 }
+
 func Info(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLog(LogLevelInfo, args...)
-	} else {
-		l.Log(LogLevelInfo, fmt.Sprint(args...))
-	}
+	l.Info(args...)
 }
+
 func Infoln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogln(LogLevelInfo, args...)
-	} else {
-		l.Log(LogLevelInfo, sprintln(args...))
-	}
+	l.Infoln(args...)
 }
+
 func Infof(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogf(LogLevelInfo, format, args...)
-	} else {
-		l.Log(LogLevelInfo, fmt.Sprintf(format, args...))
-	}
+	l.Infof(format, args...)
 }
+
 func Debug(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLog(LogLevelDebug, args...)
-	} else {
-		l.Log(LogLevelDebug, fmt.Sprint(args...))
-	}
+	l.Debug(args...)
 }
+
 func Debugln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogln(LogLevelDebug, args...)
-	} else {
-		l.Log(LogLevelDebug, sprintln(args...))
-	}
+	l.Debugln(args...)
 }
+
 func Debugf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogf(LogLevelDebug, format, args...)
-	} else {
-		l.Log(LogLevelDebug, fmt.Sprintf(format, args...))
-	}
+	l.Debugf(format, args...)
 }
+
 func Trace(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLog(LogLevelTrace, args...)
-	} else {
-		l.Log(LogLevelTrace, fmt.Sprint(args...))
-	}
+	l.Trace(args...)
 }
+
 func Traceln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogln(LogLevelTrace, args...)
-	} else {
-		l.Log(LogLevelTrace, sprintln(args...))
-	}
+	l.Traceln(args...)
 }
+
 func Tracef(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogf(LogLevelTrace, format, args...)
-	} else {
-		l.Log(LogLevelTrace, fmt.Sprintf(format, args...))
-	}
+	l.Tracef(format, args...)
 }
+
 func Print(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLog(LogLevelInfo, args...)
-	} else {
-		l.Log(LogLevelInfo, fmt.Sprint(args...))
-	}
+	l.Info(args...)
 }
+
 func Println(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogln(LogLevelInfo, args...)
-	} else {
-		l.Log(LogLevelInfo, sprintln(args...))
-	}
+	l.Infoln(args...)
 }
+
 func Printf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogf(LogLevelInfo, format, args...)
-	} else {
-		l.Log(LogLevelInfo, fmt.Sprintf(format, args...))
-	}
+	l.Infof(format, args...)
 }
+
 func Warning(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLog(LogLevelWarn, args...)
-	} else {
-		l.Log(LogLevelWarn, fmt.Sprint(args...))
-	}
+	l.Warn(args...)
 }
+
 func Warningln(ctx context.Context, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogln(LogLevelWarn, args...)
-	} else {
-		l.Log(LogLevelWarn, sprintln(args...))
-	}
+	l.Warnln(args...)
 }
+
 func Warningf(ctx context.Context, format string, args ...any) {
 	l := getLogger(ctx)
 	l.Helper()
-	if opt, ok := l.(OptimizedLogger); ok {
-		opt.UnformattedLogf(LogLevelWarn, format, args...)
-	} else {
-		l.Log(LogLevelWarn, fmt.Sprintf(format, args...))
-	}
+	l.Warnf(format, args...)
 }

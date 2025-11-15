@@ -5,6 +5,7 @@ help:
 	@echo 'Usage:'
 	@echo '  make help'
 	@echo '  make test'
+	@echo '  make generate'
 	@echo '  make dlib.cov.html'
 	@echo '  make lint'
 .PHONY: help

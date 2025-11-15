@@ -17,71 +17,43 @@
 package dlog
 
 import (
+	"fmt"
 	"log"
 )
 
-// Logger is a generic logging interface that most loggers implement,
-// so that consumers don't need to care about the actual log
-// implementation.
-//
-// Note that unlike logrus.FieldLogger, it does not include Fatal or
-// Panic logging options.  Do proper error handling!  Return those
-// errors!
-//
-// Because this interface cannot change without breaking backward
-// compatibility, it is frozen and cannot be changed.
-type Logger interface {
-	// Helper marks the calling function as a logging helper
-	// function.  This way loggers can report the line that the
-	// log came from, while excluding functions that are part of
-	// dlog itself.
-	//
-	// See also: testing.T.Helper
+// PlainLogger is the most basic logger. that all loggers must implement,
+// so that consumers don't need to care about the actual log implementation.
+type PlainLogger interface {
 	Helper()
 
-	// WithField returns a copy of the logger with the
-	// structured-logging field key=value associated with it, for
-	// future calls to .Log().
-	WithField(key string, value any) Logger
+	LogMessage(level LogLevel, message string)
 
 	// StdLogger returns a stdlib *log.Logger that writes to this
 	// Logger at the specified loglevel; for use with external
-	// libraries that demand a stdlib *log.Logger.  Since
+	// libraries that demand a stdlib *log.Logger.	Since
 	StdLogger(LogLevel) *log.Logger
-
-	// Log actually logs a message.
-	Log(level LogLevel, msg string)
 }
 
-// OptimizedLogger is a Logger that takes on the complexity of
-// formatting log lines in to a string.  Normally this is done by dlog
-// itself before passing the formatted string to the Logger.  However,
-// if the Logger is able to do these things itself then it might save
-// some time by not actually formatting messages that won't be
-// printed.
-//
-// Because OptimizedLogger is an opt-in optimization that does not
-// affect correctness, its definition may change between dlib
-// versions.
-type OptimizedLogger interface {
-	Logger
+// GenericLogger provides the ability to first check the log-level to determine if
+// logging will be made, and then format the message only when that is the case.
+type GenericLogger interface {
+	PlainLogger
 
-	// UnformattedLog formats then logs a message.  The message is
-	// formatted using the default formats for its operands and
-	// adds spaces between operands when neither is a string; in
-	// the manner of fmt.Print().
-	UnformattedLog(level LogLevel, args ...any)
+	// Log formats then logs a message if the logger's MaxLevel is >= the given level.
+	// The message is formatted using the default formats for its operands and adds
+	// spaces between operands when neither is a string; in the manner of fmt.Print().
+	Log(level LogLevel, args ...any)
 
-	// UnformattedLogln formats then logs a message.  The message
-	// is formatted using the default formats for its operands and
-	// always adds spaces between operands; in the manner of
-	// fmt.Println() but without appending a newline.
-	UnformattedLogln(level LogLevel, args ...any)
+	// Logf formats then logs a message if the logger's MaxLevel is >= the given level.
+	// The message is formatted according to the format specifier; in the manner of
+	// fmt.Printf().
+	Logf(level LogLevel, fmt string, args ...any)
 
-	// UnformattedLogf formats then logs a message.  The message is
-	// formatted according to the format specifier; in the manner
-	// of fmt.Printf().
-	UnformattedLogf(level LogLevel, format string, args ...any)
+	// Logln formats then logs a message if the logger's MaxLevel is >= the given level.
+	// The message is formatted using the default formats for its operands and always
+	// adds spaces between operands; in the manner of fmt.Println() but without appending
+	// a newline.
+	Logln(level LogLevel, args ...any)
 }
 
 // LoggerWithMaxLevel can be implemented by loggers that define a maximum
@@ -93,20 +65,9 @@ type OptimizedLogger interface {
 // so that resource consuming string formatting can be avoided if its known
 // that the resulting message will be discarded anyway.
 //
-// The MaxLevel method is provided in an extra interface for two reasons:
-//
-// 1. Expected implementations of OptimizedLogger that don't need a
-// MaxLevel, such as a wrapper for log.Logger.
-//
-// 2. A concern about performance degradation in existing implementations
-// when checks like:
-//
-//	if opt, ok := l.(OptimizedLogger); ok {
-//	    ...
-//	}
-//
-// no longer detect implementations that lack the MaxLevel method and
-// silently choose a non-optimized approach.
+// The MaxLevel method is provided in an extra interface so that expected
+// implementations of Logger that don't need a MaxLevel, such as a wrapper for
+// log.Logger don't need to implement it.
 type LoggerWithMaxLevel interface {
 	// MaxLevel return the maximum loglevel that will be logged
 	MaxLevel() LogLevel
@@ -129,3 +90,33 @@ const (
 	// informational events than the Debug.
 	LogLevelTrace
 )
+
+// GenericImpl implements all level-specific functions by calling the generic function with
+// the level of the specific function. It's intended to be used as the base for implementations
+// that lack the level-specific functions, such as the standard logger.
+type GenericImpl struct {
+	PlainLogger
+}
+
+func (l GenericImpl) Log(level LogLevel, args ...any) {
+	l.Helper()
+	l.LogMessage(level, fmt.Sprint(args...))
+}
+
+func (l GenericImpl) Logf(level LogLevel, format string, args ...any) {
+	l.Helper()
+	l.LogMessage(level, fmt.Sprintf(format, args...))
+}
+
+func (l GenericImpl) Logln(level LogLevel, args ...any) {
+	l.Helper()
+	// Trim the trailing newline; what we care about is that spaces are added in between
+	// arguments, not that there's a trailing newline.
+	// See also: logrus.Entry.sprintlnn
+	msg := fmt.Sprintln(args...)
+	l.LogMessage(level, msg[:len(msg)-1])
+}
+
+type BaseLogger struct {
+	GenericLogger
+}

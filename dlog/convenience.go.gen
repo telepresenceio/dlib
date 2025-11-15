@@ -20,49 +20,119 @@
 
 	import (
 		"context"
-		"fmt"
 	)
+
+	// Logger is an extended interface with specific functions for each level. It is modeled
+	// after the logrus.FieldLogger, but does not include Fatal or Panic logging options.	Do
+	// proper error handling!	Return those errors!
+	type Logger interface {
+		GenericLogger
+
+		// WithField returns a copy of the logger with the
+		// structured-logging field key=value associated with it, for
+		// future calls to .Log().
+		WithField(key string, value any) Logger
 	EOT
-	emit() {
+
+	emitMethods() {
 		local lvlAlias=$1
 		local lvlReal=$2
 		# If you change any of these, you should also change context.go.
 		cat <<-EOT
-		func ${lvlAlias}(ctx context.Context, args ...any) {
-			l := getLogger(ctx)
+
+			// ${lvlAlias} formats then logs a message if the logger's MaxLevel is >= LogLevel${lvlReal}.
+			// The message is formatted using the default formats for its operands and adds
+			// spaces between operands when neither is a string; in the manner of fmt.Print().
+			${lvlAlias}(args ...any)
+
+			// ${lvlAlias}f formats then logs a message if the logger's MaxLevel is >= LogLevel${lvlReal}.
+			// The message is formatted according to the format specifier; in the manner of
+			// fmt.Printf().
+			${lvlAlias}f(fmt string, args ...any)
+
+			// ${lvlAlias}ln formats then logs a message if the logger's MaxLevel is >= LogLevel${lvlReal}.
+			// The message is formatted using the default formats for its operands and always
+			// adds spaces between operands; in the manner of fmt.Println() but without appending
+			// a newline.
+			${lvlAlias}ln(args ...any)
+		EOT
+	}
+
+	emitBaseImpl() {
+		local lvlAlias=$1
+		local lvlReal=$2
+		# If you change any of these, you should also change context.go.
+		cat <<-EOT
+
+		func (l BaseLogger) ${lvlAlias}(args ...any) {
 			l.Helper()
-			if opt, ok := l.(OptimizedLogger); ok {
-				opt.UnformattedLog(LogLevel${lvlReal}, args...)
-			} else {
-				l.Log(LogLevel${lvlReal}, fmt.Sprint(args...))
-			}
+			l.Log(LogLevel${lvlReal}, args...)
 		}
-		func ${lvlAlias}ln(ctx context.Context, args ...any) {
-			l := getLogger(ctx)
+
+		func (l BaseLogger) ${lvlAlias}f(format string, args ...any) {
 			l.Helper()
-			if opt, ok := l.(OptimizedLogger); ok {
-				opt.UnformattedLogln(LogLevel${lvlReal}, args...)
-			} else {
-				l.Log(LogLevel${lvlReal}, sprintln(args...))
-			}
+			l.Logf(LogLevel${lvlReal}, format, args...)
 		}
-		func ${lvlAlias}f(ctx context.Context, format string, args ...any) {
-			l := getLogger(ctx)
+
+		func (l BaseLogger) ${lvlAlias}ln(args ...any) {
 			l.Helper()
-			if opt, ok := l.(OptimizedLogger); ok {
-				opt.UnformattedLogf(LogLevel${lvlReal}, format, args...)
-			} else {
-				l.Log(LogLevel${lvlReal}, fmt.Sprintf(format, args...))
-			}
+			l.Logln(LogLevel${lvlReal}, args...)
 		}
 		EOT
 	}
-	for lvl in "${levels[@]}"; do
-		emit "$lvl" "$lvl"
-	done
+
+	emitFunctions() {
+		local lvlAlias=$1
+		local lvlReal=$2
+		cat <<-EOT
+
+		func ${lvlAlias}(ctx context.Context, args ...any) {
+			l := getLogger(ctx)
+			l.Helper()
+			l.${lvlReal}(args...)
+		}
+
+		func ${lvlAlias}ln(ctx context.Context, args ...any) {
+			l := getLogger(ctx)
+			l.Helper()
+			l.${lvlReal}ln(args...)
+		}
+
+		func ${lvlAlias}f(ctx context.Context, format string, args ...any) {
+			l := getLogger(ctx)
+			l.Helper()
+			l.${lvlReal}f(format, args...)
+		}
+		EOT
+	}
 	# Sort the keys of aliases so we're sure the methods are always generated in the same order
 	mapfile -d '' sorted < <(printf '%s\0' "${!aliases[@]}" | LC_COLLATE=C sort -z)
+
+	for lvl in "${levels[@]}"; do
+		emitMethods "$lvl" "$lvl"
+	done
 	for alvl in "${sorted[@]}"; do
-		emit "$alvl" "${aliases[${alvl}]}"
+	 	emitMethods "$alvl" "${aliases[${alvl}]}"
+	done
+
+	cat <<-EOT
+	}
+
+	func (l BaseLogger) WithField(key string, value any) Logger {
+		panic(fmt.Sprintf("WithField is not implemented by %T", l))
+	}
+	EOT
+	for lvl in "${levels[@]}"; do
+		emitBaseImpl "$lvl" "$lvl"
+	done
+	for alvl in "${sorted[@]}"; do
+		emitBaseImpl "$alvl" "${aliases[${alvl}]}"
+	done
+
+	for lvl in "${levels[@]}"; do
+		emitFunctions "$lvl" "$lvl"
+	done
+	for alvl in "${sorted[@]}"; do
+	 	emitFunctions "$alvl" "${aliases[${alvl}]}"
 	done
 } | gofmt

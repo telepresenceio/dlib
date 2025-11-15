@@ -10,25 +10,27 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type logrusLogger interface {
-	WithField(key string, value any) *logrus.Entry
-	WriterLevel(level logrus.Level) *io.PipeWriter
+// loggerOrEntry is an interface that lists all methods that are common for the
+// logrus.Logger and logrus.Entry interfaces.
+type loggerOrEntry interface {
+	logrus.Ext1FieldLogger
 	Log(level logrus.Level, args ...any)
-	Logln(level logrus.Level, args ...any)
 	Logf(level logrus.Level, format string, args ...any)
+	Logln(level logrus.Level, args ...any)
+	WriterLevel(level logrus.Level) *io.PipeWriter
 }
 
 type logrusWrapper struct {
-	logrusLogger
+	loggerOrEntry
 }
 
-var _ OptimizedLogger = logrusWrapper{}
+var _ Logger = logrusWrapper{}
 
 // Helper does nothing--we use a Logrus Hook instead (see below).
 func (l logrusWrapper) Helper() {}
 
 func (l logrusWrapper) WithField(key string, value any) Logger {
-	return logrusWrapper{l.logrusLogger.WithField(key, value)}
+	return logrusWrapper{l.loggerOrEntry.WithField(key, value)}
 }
 
 var dlogLevel2logrusLevel = [5]logrus.Level{
@@ -39,53 +41,50 @@ var dlogLevel2logrusLevel = [5]logrus.Level{
 	logrus.TraceLevel,
 }
 
-func (l logrusWrapper) StdLogger(level LogLevel) *log.Logger {
+func logrusLevel(level LogLevel) logrus.Level {
 	if level > LogLevelTrace {
 		panic(errors.Errorf("invalid LogLevel: %d", level))
 	}
-	return log.New(l.logrusLogger.WriterLevel(dlogLevel2logrusLevel[level]), "", 0)
+	return dlogLevel2logrusLevel[level]
 }
 
-func (l logrusWrapper) Log(level LogLevel, msg string) {
-	if level > LogLevelTrace {
-		panic(errors.Errorf("invalid LogLevel: %d", level))
-	}
-	l.logrusLogger.Log(dlogLevel2logrusLevel[level], msg)
+func (l logrusWrapper) LogMessage(level LogLevel, message string) {
+	l.Log(level, message)
+}
+
+func (l logrusWrapper) StdLogger(level LogLevel) *log.Logger {
+	return log.New(l.WriterLevel(logrusLevel(level)), "", 0)
+}
+
+func (l logrusWrapper) Log(level LogLevel, args ...any) {
+	l.loggerOrEntry.Log(logrusLevel(level), args...)
+}
+
+func (l logrusWrapper) Logf(level LogLevel, format string, args ...any) {
+	l.loggerOrEntry.Logf(logrusLevel(level), format, args...)
+}
+
+func (l logrusWrapper) Logln(level LogLevel, args ...any) {
+	l.loggerOrEntry.Logln(logrusLevel(level), args...)
 }
 
 func (l logrusWrapper) MaxLevel() LogLevel {
-	ll := l.logrusLogger
-	if le, ok := ll.(*logrus.Entry); ok {
-		ll = le.Logger
+	var ll *logrus.Logger
+	switch l := l.loggerOrEntry.(type) {
+	case *logrus.Logger:
+		ll = l
+	case *logrus.Entry:
+		ll = l.Logger
+	default:
+		l.Panic("unable to get logrus.Level from a %T", l)
 	}
-	logrusLevel := ll.(*logrus.Logger).GetLevel()
+	lrv := ll.GetLevel()
 	for i, l := range dlogLevel2logrusLevel {
-		if l == logrusLevel {
+		if l == lrv {
 			return LogLevel(i)
 		}
 	}
-	panic(errors.Errorf("invalid logrus LogLevel: %d", logrusLevel))
-}
-
-func (l logrusWrapper) UnformattedLog(level LogLevel, args ...any) {
-	if level > LogLevelTrace {
-		panic(errors.Errorf("invalid LogLevel: %d", level))
-	}
-	l.logrusLogger.Log(dlogLevel2logrusLevel[level], args...)
-}
-
-func (l logrusWrapper) UnformattedLogln(level LogLevel, args ...any) {
-	if level > LogLevelTrace {
-		panic(errors.Errorf("invalid LogLevel: %d", level))
-	}
-	l.logrusLogger.Logln(dlogLevel2logrusLevel[level], args...)
-}
-
-func (l logrusWrapper) UnformattedLogf(level LogLevel, format string, args ...any) {
-	if level > LogLevelTrace {
-		panic(errors.Errorf("invalid LogLevel: %d", level))
-	}
-	l.logrusLogger.Logf(dlogLevel2logrusLevel[level], format, args...)
+	panic(errors.Errorf("invalid logrus LogLevel: %d", lrv))
 }
 
 // WrapLogrus converts a logrus *Logger into a generic Logger.
@@ -105,15 +104,15 @@ func (logrusFixCallerHook) Levels() []logrus.Level {
 }
 
 func (logrusFixCallerHook) Fire(entry *logrus.Entry) error {
-	if entry.Caller != nil && strings.HasPrefix(entry.Caller.Function, dlogPackage+".") {
+	if entry.Caller != nil && strings.HasPrefix(entry.Caller.Function, dlogPackageDot) {
 		entry.Caller = getCaller()
 	}
 	return nil
 }
 
 const (
-	dlogPackage            = "github.com/datawire/dlib/dlog"
-	logrusPackage          = "github.com/sirupsen/logrus"
+	dlogPackageDot         = "github.com/datawire/dlib/dlog."
+	logrusPackageDot       = "github.com/sirupsen/logrus."
 	maximumCallerDepth int = 25
 	minimumCallerDepth int = 2 // runtime.Callers + getCaller
 )
@@ -130,10 +129,10 @@ func getCaller() *runtime.Frame {
 
 	for f, again := frames.Next(); again; f, again = frames.Next() {
 		// If the caller isn't part of this package, we're done
-		if strings.HasPrefix(f.Function, logrusPackage+".") {
+		if strings.HasPrefix(f.Function, logrusPackageDot) {
 			continue
 		}
-		if strings.HasPrefix(f.Function, dlogPackage+".") {
+		if strings.HasPrefix(f.Function, dlogPackageDot) {
 			continue
 		}
 		return &f //nolint:scopelint

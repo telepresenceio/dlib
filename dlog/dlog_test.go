@@ -205,30 +205,37 @@ type testLogEntry struct {
 
 type testLog struct {
 	entries []testLogEntry
+	fields  map[string]any
 }
 
 type testLogger struct {
-	log    *testLog
-	fields map[string]any
+	dlog.BaseLogger
 }
 
-func (l testLogger) Helper() {}
+func newTestLogger(log *testLog) testLogger {
+	return testLogger{dlog.BaseLogger{GenericLogger: dlog.GenericImpl{PlainLogger: log}}}
+}
+
 func (l testLogger) WithField(key string, value any) dlog.Logger {
-	ret := testLogger{
-		log:    l.log,
-		fields: make(map[string]any, len(l.fields)+1),
+	w := l.GenericLogger.(dlog.GenericImpl).PlainLogger.(*testLog)
+	ret := testLog{
+		entries: w.entries,
+		fields:  make(map[string]any, len(w.fields)+1),
 	}
-	for k, v := range l.fields {
+	for k, v := range w.fields {
 		ret.fields[k] = v
 	}
 	ret.fields[key] = value
-	return ret
+	return newTestLogger(&ret)
 }
-func (l testLogger) StdLogger(dlog.LogLevel) *log.Logger {
+
+func (l *testLog) StdLogger(dlog.LogLevel) *log.Logger {
 	panic("not implemented")
 }
 
-func (l testLogger) Log(lvl dlog.LogLevel, msg string) {
+func (l *testLog) Helper() {}
+
+func (l *testLog) LogMessage(lvl dlog.LogLevel, msg string) {
 	entry := testLogEntry{
 		level:   lvl,
 		message: msg,
@@ -237,7 +244,7 @@ func (l testLogger) Log(lvl dlog.LogLevel, msg string) {
 	for k, v := range l.fields {
 		entry.fields[k] = v
 	}
-	l.log.entries = append(l.log.entries, entry)
+	l.entries = append(l.entries, entry)
 }
 
 func TestFormating(t *testing.T) {
@@ -275,7 +282,7 @@ func TestFormating(t *testing.T) {
 	}
 
 	var log testLog
-	ctx := dlog.WithLogger(context.Background(), testLogger{log: &log})
+	ctx := dlog.WithLogger(context.Background(), newTestLogger(&log))
 
 	testcases := []struct {
 		Funcs    any
@@ -322,7 +329,7 @@ func TestFormating(t *testing.T) {
 
 func TestFallbackLogger(t *testing.T) {
 	var log testLog
-	dlog.SetFallbackLogger(testLogger{log: &log})
+	dlog.SetFallbackLogger(newTestLogger(&log))
 	// Create a new context off the background to make sure it resorts to the fallback
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

@@ -19,19 +19,7 @@ type tbWrapper struct {
 	fields        map[string]any
 }
 
-func (w tbWrapper) WithField(key string, value any) Logger {
-	ret := tbWrapper{
-		TB:     w.TB,
-		fields: make(map[string]any, len(w.fields)+1),
-	}
-	for k, v := range w.fields {
-		ret.fields[k] = v
-	}
-	ret.fields[key] = value
-	return ret
-}
-
-func (w tbWrapper) Log(level LogLevel, msg string) {
+func (w *tbWrapper) LogMessage(level LogLevel, msg string) {
 	w.Helper()
 	fields := make(map[string]any, len(w.fields)+2)
 	for k, v := range w.fields {
@@ -76,6 +64,21 @@ func (w tbWrapper) Log(level LogLevel, msg string) {
 	}
 }
 
+func (w *tbWrapper) StdLogger(l LogLevel) *log.Logger {
+	return log.New(tbWriter{w, l}, "", 0)
+}
+
+type tbWriter struct {
+	w *tbWrapper
+	l LogLevel
+}
+
+func (w tbWriter) Write(data []byte) (n int, err error) {
+	w.w.Helper()
+	w.w.Log(w.l, string(data))
+	return len(data), nil
+}
+
 // WrapTB converts a testing.TB (that is: either a *testing.T or a *testing.B) into a generic
 // Logger.
 //
@@ -89,6 +92,23 @@ func WrapTB(in testing.TB, failOnError bool) Logger {
 	return wrapTB(in, WithFailOnError(failOnError))
 }
 
+type tbLogger struct {
+	BaseLogger
+}
+
+func (t tbLogger) WithField(key string, value any) Logger {
+	w := t.GenericLogger.(GenericImpl).PlainLogger.(*tbWrapper)
+	ret := tbWrapper{
+		TB:     w.TB,
+		fields: make(map[string]any, len(w.fields)+1),
+	}
+	for k, v := range w.fields {
+		ret.fields[k] = v
+	}
+	ret.fields[key] = value
+	return tbLogger{BaseLogger{GenericLogger: GenericImpl{&ret}}}
+}
+
 func wrapTB(in testing.TB, opts ...TestContextOption) Logger {
 	wrapper := tbWrapper{
 		TB:            in,
@@ -98,22 +118,7 @@ func wrapTB(in testing.TB, opts ...TestContextOption) Logger {
 	for _, opt := range opts {
 		opt(&wrapper)
 	}
-	return wrapper
-}
-
-type tbWriter struct {
-	w tbWrapper
-	l LogLevel
-}
-
-func (w tbWriter) Write(data []byte) (n int, err error) {
-	w.w.Helper()
-	w.w.Log(w.l, string(data))
-	return len(data), nil
-}
-
-func (w tbWrapper) StdLogger(l LogLevel) *log.Logger {
-	return log.New(tbWriter{w, l}, "", 0)
+	return tbLogger{BaseLogger{GenericLogger: GenericImpl{&wrapper}}}
 }
 
 // TestContextOption represents options that can be set on test contexts
