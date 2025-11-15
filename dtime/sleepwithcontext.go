@@ -8,17 +8,17 @@ import (
 // sleepTestHook is a hook that SleepWithContext calls, that lets us
 // insert a pause in order to more reliably test a certain race
 // condition.
-var sleepTestHook func()
+var sleepTestHook func() //nolint:gochecknoglobals // constant
 
 // SleepWithContext pauses the current goroutine for at least the duration d, or
 // until the Context is done, whichever happens first.
 //
 // You may be thinking, why not just do:
 //
-//     select {
-//     case <-ctx.Done():
-//     case <-time.After(d):
-//     }
+//	select {
+//	case <-ctx.Done():
+//	case <-time.After(d):
+//	}
 //
 // well, time.After can't get garbage collected until the timer
 // expires, even if the Context is done.  What this function provides

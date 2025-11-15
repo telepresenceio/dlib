@@ -15,13 +15,14 @@
 // top of errgroup without duplicating and doubling up on all of
 // errgroup's synchronization/locking.  Anything that can reasonably
 // be implemented *on top of* derrgroup is not included in derrgroup:
-//  - Managing `context.Contexts`s (this is something that errgroup
-//    kind of does, but derrgroup ripped out, because it can trivially
-//    be implemented on top of derrgroup)
-//  - Signal handling
-//  - Logging
-//  - Hard/soft cancellation
-//  - Having `Wait()` timeout on a shutdown that takes too long
+//   - Managing `context.Contexts`s (this is something that errgroup
+//     kind of does, but derrgroup ripped out, because it can trivially
+//     be implemented on top of derrgroup)
+//   - Signal handling
+//   - Logging
+//   - Hard/soft cancellation
+//   - Having `Wait()` timeout on a shutdown that takes too long
+//
 // Those are all good and useful things to have.  But they should be
 // implemented in a layer *on top of* derrgroup. "derrgroup.Group" was
 // originally called "llGroup" for "low-level group"; it is
@@ -39,6 +40,8 @@
 package derrgroup
 
 import (
+	"fmt"
+	"os"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -65,6 +68,35 @@ func (s GoroutineState) String() string {
 	}
 }
 
+type softSignalError struct {
+	signal  os.Signal
+	discard bool
+}
+
+func (e *softSignalError) Error() string {
+	return fmt.Sprintf("received signal %s (triggering graceful shutdown)", e.signal)
+}
+
+func (e *softSignalError) Discard() bool {
+	return e.discard
+}
+
+func NewSoftSignalError(signal os.Signal, discard bool) error {
+	return &softSignalError{signal: signal, discard: discard}
+}
+
+type hardSignalError struct {
+	signal os.Signal
+}
+
+func (e hardSignalError) Error() string {
+	return fmt.Sprintf("received signal %s (graceful shutdown already triggered; triggering not-so-graceful shutdown)", e.signal)
+}
+
+func NewHardSignalError(signal os.Signal) error {
+	return hardSignalError{signal: signal}
+}
+
 // A Group is a collection of goroutines working on subtasks that are part of
 // the same overall task.
 //
@@ -87,6 +119,9 @@ type Group struct {
 // The provided 'cancel' function is called the first time a function passed to
 // Go returns a non-nil error.
 func NewGroup(cancel func(), cancelOnNonError bool) *Group {
+	if cancel == nil {
+		cancel = func() {}
+	}
 	return &Group{
 		cancel:           cancel,
 		cancelOnNonError: cancelOnNonError,
@@ -115,9 +150,7 @@ func (g *Group) Go(name string, f func() error) {
 		go func() {
 			g.errOnce.Do(func() {
 				g.err = errors.Errorf("a goroutine with name %q already exists", name)
-				if g.cancel != nil {
-					g.cancel()
-				}
+				g.cancel()
 			})
 			g.wg.Done()
 		}()
@@ -130,13 +163,17 @@ func (g *Group) Go(name string, f func() error) {
 	go func() {
 		exitState := GoroutineExited
 		if err := f(); err != nil {
-			exitState = GoroutineErrored
-			g.errOnce.Do(func() {
-				g.err = err
-				if g.cancel != nil {
+			var softErr *softSignalError
+			if errors.As(err, &softErr) && softErr.Discard() {
+				// Cancel other go-routines but don't propagate this error
+				g.cancel()
+			} else {
+				exitState = GoroutineErrored
+				g.errOnce.Do(func() {
+					g.err = err
 					g.cancel()
-				}
-			})
+				})
+			}
 		} else if g.cancelOnNonError {
 			g.cancel()
 		}

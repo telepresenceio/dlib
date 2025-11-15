@@ -102,6 +102,8 @@ package dcontext
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 	"time"
 )
 
@@ -119,6 +121,13 @@ func WithSoftness(hardCtx context.Context) (softCtx context.Context) {
 type childHardContext struct {
 	hardCtx context.Context
 	softCtx context.Context
+}
+
+func contextName(c context.Context) string {
+	if s, ok := c.(fmt.Stringer); ok {
+		return s.String()
+	}
+	return reflect.TypeOf(c).String()
 }
 
 func (c childHardContext) Deadline() (deadline time.Time, ok bool) { return c.hardCtx.Deadline() }

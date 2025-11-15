@@ -17,7 +17,7 @@ import (
 // two interfaces with non-comparable underlying types.
 func interfaceEqual(a, b any) bool {
 	defer func() {
-		recover()
+		_ = recover()
 	}()
 	return a == b
 }

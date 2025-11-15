@@ -6,7 +6,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // This is a test program that verifies that it can read from
 // descriptor 3 and that no other descriptors are open.
@@ -24,7 +23,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/datawire/dlib/v2/dexec/internal/poll" // MODIFIED: FROM: "internal/poll"
+	"github.com/telepresenceio/dlib/v2/dexec/internal/poll" // MODIFIED: FROM: "internal/poll"
 )
 
 func main() {

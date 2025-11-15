@@ -45,9 +45,9 @@ import (
 
 	"golang.org/x/net/http2"
 
-	"github.com/datawire/dlib/v2/dcontext"
-	"github.com/datawire/dlib/v2/dgroup"
-	"github.com/datawire/dlib/v2/dlog"
+	"github.com/telepresenceio/dlib/v2/dcontext"
+	"github.com/telepresenceio/dlib/v2/dgroup"
+	"github.com/telepresenceio/dlib/v2/dlog"
 )
 
 // connContextFn is just a convenience type alias because the type signature for concatConnContext
@@ -393,7 +393,7 @@ func (sc *ServerConfig) ServeTLS(ctx context.Context, ln net.Listener, certFile,
 	return sc.serve(ctx, func(srv *http.Server) error { return srv.ServeTLS(ln, certFile, keyFile) })
 }
 
-// ListenAndServeTLS is like Serve, but rather than taking an existing Listener object, it takes a
+// ListenAndServe is like Serve, but rather than taking an existing Listener object, it takes a
 // TCP address to listen on.  If an empty address is given, then ":http" is used.
 func (sc *ServerConfig) ListenAndServe(ctx context.Context, addr string) error {
 	if addr == "" {

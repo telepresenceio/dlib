@@ -12,8 +12,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	exec "github.com/datawire/dlib/v2/dexec"
-	"github.com/datawire/dlib/v2/dlog"
+	exec "github.com/telepresenceio/dlib/v2/dexec"
+	"github.com/telepresenceio/dlib/v2/dlog"
 )
 
 func TestMustCapture(t *testing.T) {

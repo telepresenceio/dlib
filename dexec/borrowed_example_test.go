@@ -19,7 +19,7 @@ import (
 	"strings"
 	"time"
 
-	exec "github.com/datawire/dlib/v2/dexec" // MODIFIED: FROM: "os/exec"
+	exec "github.com/telepresenceio/dlib/v2/dexec" // MODIFIED: FROM: "os/exec"
 )
 
 func ExampleLookPath() {

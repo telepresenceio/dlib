@@ -53,9 +53,9 @@ import (
 	// we'll use it are situations where stacktraces will be useful.
 	"github.com/pkg/errors"
 
-	"github.com/datawire/dlib/v2/dcontext"
-	"github.com/datawire/dlib/v2/dlog"
-	"github.com/datawire/dlib/v2/internal/sigint"
+	"github.com/telepresenceio/dlib/v2/dcontext"
+	"github.com/telepresenceio/dlib/v2/dlog"
+	"github.com/telepresenceio/dlib/v2/internal/sigint"
 )
 
 // Error is returned by LookPath when it fails to classify a file as an
@@ -69,7 +69,7 @@ type ExitError = exec.ExitError
 var ErrNotFound = exec.ErrNotFound
 
 // LookPath is the os/exe.LookPath function.
-var LookPath = exec.LookPath
+var LookPath = exec.LookPath //nolint:gochecknoglobals // constant
 
 // Cmd represents an external command being prepared or run.
 //
@@ -210,7 +210,7 @@ func (c *Cmd) Start() error {
 						if !c.DisableLogging {
 							dlog.Print(c.ctx, "sending SIGINT")
 						}
-						_ = sigint.SendInterrupt(c.Cmd.Process)
+						_ = sigint.SendInterrupt(c.Process)
 					}
 				case <-c.waitDone:
 					// it exited on its own

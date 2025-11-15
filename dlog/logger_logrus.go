@@ -33,6 +33,7 @@ func (l logrusWrapper) WithField(key string, value any) Logger {
 	return logrusWrapper{l.loggerOrEntry.WithField(key, value)}
 }
 
+//nolint:gochecknoglobals // constant
 var dlogLevel2logrusLevel = [5]logrus.Level{
 	logrus.ErrorLevel,
 	logrus.WarnLevel,
@@ -111,7 +112,7 @@ func (logrusFixCallerHook) Fire(entry *logrus.Entry) error {
 }
 
 const (
-	dlogPackageDot         = "github.com/datawire/dlib/v2/dlog."
+	dlogPackageDot         = "github.com/telepresenceio/dlib/v2/dlog."
 	logrusPackageDot       = "github.com/sirupsen/logrus."
 	maximumCallerDepth int = 25
 	minimumCallerDepth int = 2 // runtime.Callers + getCaller
@@ -135,7 +136,7 @@ func getCaller() *runtime.Frame {
 		if strings.HasPrefix(f.Function, dlogPackageDot) {
 			continue
 		}
-		return &f //nolint:scopelint
+		return &f
 	}
 
 	// if we got here, we failed to find the caller's context

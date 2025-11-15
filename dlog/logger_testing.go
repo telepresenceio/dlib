@@ -55,12 +55,12 @@ func (w *tbWrapper) LogMessage(level LogLevel, msg string) {
 	switch level {
 	case LogLevelError:
 		if w.failOnError {
-			w.TB.Error(str)
+			w.Error(str)
 		} else {
-			w.TB.Log(str)
+			w.Log(str)
 		}
 	case LogLevelWarn, LogLevelInfo, LogLevelDebug, LogLevelTrace:
-		w.TB.Log(str)
+		w.Log(str)
 	}
 }
 
@@ -121,11 +121,11 @@ func wrapTB(in testing.TB, opts ...TestContextOption) Logger {
 	return tbLogger{BaseLogger{GenericLogger: GenericImpl{&wrapper}}}
 }
 
-// TestContextOption represents options that can be set on test contexts
+// TestContextOption represents options that can be set on test contexts.
 type TestContextOption func(*tbWrapper)
 
 // WithFailOnError sets a test context to fail on calling any of the dlog.Error{,f,ln} functions.
-// If not given, defaults to false
+// If not given, defaults to false.
 func WithFailOnError(failOnError bool) TestContextOption {
 	return func(w *tbWrapper) {
 		w.failOnError = failOnError
@@ -134,7 +134,7 @@ func WithFailOnError(failOnError bool) TestContextOption {
 
 // WithTimestampLogging sets a test context to always log timestamps
 // Note that these will be logged as log fields.
-// If not given, defaults to true
+// If not given, defaults to true.
 func WithTimestampLogging(logTimestamps bool) TestContextOption {
 	return func(w *tbWrapper) {
 		w.logTimestamps = logTimestamps
@@ -142,7 +142,7 @@ func WithTimestampLogging(logTimestamps bool) TestContextOption {
 }
 
 // NewTestContext is like NewTestContextWithOpts but allows for the failOnError option to be set
-// as a boolean. It is kept for backward-compatibility, new code should prefer NewTestContextWithOpts
+// as a boolean. It is kept for backward-compatibility, new code should prefer NewTestContextWithOpts.
 func NewTestContext(t testing.TB, failOnError bool) context.Context {
 	return NewTestContextWithOpts(t, WithFailOnError(failOnError))
 }

@@ -13,21 +13,22 @@ import (
 //
 // The HTTP/2 configuration 'conf' may be nil.
 //
-//  - This is better than golang.org/x/net/http2.ConfigureServer because this also handles "h2c",
-//    not just "h2".
-//  - This is better than the default net/http.Server HTTP/2 support, as the default support is
-//    exactly equivalent to golang.org/x/net/http2.ConfigureServer (it uses a vendor'ed copy of
-//    golang.org/x/net/http2).
-//  - This is better than golang.org/x/net/http2/h2c.NewHandler because this will properly shut down
-//    idle h2c connections when server.Shutdown is called, rather than allowing h2c connections to
-//    sit around forever.
+//   - This is better than golang.org/x/net/http2.ConfigureServer because this also handles "h2c",
+//     not just "h2".
+//   - This is better than the default net/http.Server HTTP/2 support, as the default support is
+//     exactly equivalent to golang.org/x/net/http2.ConfigureServer (it uses a vendor'ed copy of
+//     golang.org/x/net/http2).
+//   - This is better than golang.org/x/net/http2/h2c.NewHandler because this will properly shut down
+//     idle h2c connections when server.Shutdown is called, rather than allowing h2c connections to
+//     sit around forever.
 //
 // This must be called before server starts serving, as this will mutate server.TLSConfig,
 // server.TLSNextProto, and server.Handler.
 //
 // However, this has some limitations (that I believe all other alternatives also share):
-//  - h2c connections are not closed by server.Close().
-//  - server.Shutdown() may return early before all h2c connections have been shutdown.
+//   - h2c connections are not closed by server.Close().
+//   - server.Shutdown() may return early before all h2c connections have been shutdown.
+//
 // These limitations can be solved with configureHijackTracking.
 func configureHTTP2(server *http.Server, conf *http2.Server) error {
 	if server == nil {

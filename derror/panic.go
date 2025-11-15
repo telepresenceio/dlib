@@ -34,10 +34,14 @@ type panicError struct {
 	err featurefulError
 }
 
-func (pe panicError) Error() string                 { return "PANIC: " + pe.err.Error() }
-func (pe panicError) Unwrap() error                 { return pe.err } // Go 1.13 std "errors"
-func (pe panicError) Cause() error                  { return pe.err } // "github.com/pkg/errors"
+func (pe panicError) Error() string { return "PANIC: " + pe.err.Error() }
+
+func (pe panicError) Unwrap() error { return pe.err } // Go 1.13 std "errors"
+
+func (pe panicError) Cause() error { return pe.err } // "github.com/pkg/errors"
+
 func (pe panicError) StackTrace() errors.StackTrace { return pe.err.StackTrace()[1:] }
+
 func (pe panicError) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
@@ -55,9 +59,11 @@ func (pe panicError) Format(s fmt.State, verb rune) {
 	}
 }
 
-var _ unwrapper = panicError{}
-var _ causer = panicError{}
-var _ featurefulError = panicError{}
+var (
+	_ unwrapper       = panicError{}
+	_ causer          = panicError{}
+	_ featurefulError = panicError{}
+)
 
 // PanicToError takes an arbitrary object returned from recover(), and
 // returns an appropriate error.

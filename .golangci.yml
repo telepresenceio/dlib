@@ -1,21 +1,189 @@
+version: "2"
+run:
+   modules-download-mode: readonly
 linters:
   enable:
-  - nolintlint
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - copyloopvar
+    - cyclop
+    - decorder
+    - depguard
+    - dogsled
+    - durationcheck
+    - errname
+    - forbidigo
+    - gochecknoglobals
+    - gocognit
+    - gocritic
+    - gocyclo
+    - godot
+    - goheader
+    - gomodguard
+    - goprintffuncname
+    - grouper
+    - importas
+    - lll
+    - loggercheck
+    - makezero
+    - misspell
+    - nakedret
+    - nolintlint
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - reassign
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - whitespace
   disable:
-  - unused  # broken, gives false positives
-linters-settings:
-  gofmt:
-    simplify: true
-  goimports:
-    local-prefixes: github.com/datawire/dlib
-  errcheck:
-    exclude-functions: "./.circleci/errcheck-exclude.txt"
-  nolintlint:
-    allow-leading-space: false
+    - containedctx
+    - contextcheck
+    - dupl
+    - err113
+    - errchkjson
+    - errorlint
+    - exhaustive
+    - exhaustruct
+    - forcetypeassert
+    - funlen
+    - gochecknoinits
+    - goconst
+    - godox
+    - gomoddirectives
+    - gosec
+    - interfacebloat
+    - ireturn
+    - maintidx
+    - nestif
+    - nilerr
+    - nilnil
+    - nlreturn
+    - noctx
+    - nonamedreturns
+    - paralleltest
+    - promlinter
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - tagliatelle
+    - testpackage
+    - thelper
+    - tparallel
+    - varnamelen
+    - wastedassign
+    - wrapcheck
+    - wsl
+  settings:
+    cyclop:
+      max-complexity: 32
+    depguard:
+      rules:
+        main:
+          files:
+            - $all
+          deny:
+            - pkg: io/ioutil
+              desc: '`io/ioutil` is deprecated in Go 1.16, use `io` or `os` instead'
+            - pkg: syscall
+              desc: Use `golang.org/x/sys/...` instead of `syscall`
+    forbidigo:
+      forbid:
+        - pattern: '^os\.IsNotExist$'
+          msg: Use errors.Is(err, fs.ErrNotExist)
+    gocognit:
+      min-complexity: 65
+    gocyclo:
+      min-complexity: 35
+    gomodguard:
+      blocked:
+        modules:
+          - gotest.tools:
+              recommendations:
+                - github.com/stretchr/testify
+                - github.com/google/go-cmp/cmp
+          - gotest.tools/v2:
+              recommendations:
+                - github.com/stretchr/testify
+                - github.com/google/go-cmp/cmp
+          - gotest.tools/v3:
+              recommendations:
+                - github.com/stretchr/testify
+                - github.com/google/go-cmp/cmp
+    lll:
+      line-length: 180
+      tab-width: 2
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-no-explanation:
+        - gocognit
+      allow-unused: true
+    prealloc:
+      range-loops: false
+    staticcheck:
+      checks:
+        - all
+        # Don't check "Apply De Morgan's law".
+        # https://staticcheck.dev/docs/checks/#QF1001
+        - -QF1001
+        # Don't check "Incorrect or missing package comment".
+        # https://staticcheck.dev/docs/checks/#ST1000
+        - -ST1000
+        # Don't check "Poorly chosen identifier".
+        # https://staticcheck.dev/docs/checks/#ST1003
+        - -ST1003
+
+
+  exclusions:
+    generated: lax
+    rules:
+      - path: _test(env)?\.go
+        linters:
+          - bodyclose
+          - copyloopvar
+          - depguard
+          - errcheck
+          - gochecknoglobals
+          - gocognit
+          - gocritic
+          - gocyclo
+          - godot
+          - gofmt
+          - gofumpt
+          - govet
+          - lll
+          - nolintlint
+          - staticcheck
+          - unparam
+          - unused
+          - whitespace
+
+      - path: (.+)\.go$
+        text: Error return value of `(\w+\.)+(Close|CloseSend|Flush|Remove|(Un)?Setenv|(Fp|P)rint(f|ln))\` is not checked
+      - path: (.+)\.go$
+        text: 'structtag: struct field \w+ repeats json tag'
+      - path: (.+)\.go$
+        text: Subprocess launched with function call as argument or cmd arguments
+      - linters:
+          - cyclop
+        path: (.+)_test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-rules:
-    - path: "/borrowed_"
-      text: ".*"
-    - path: "^dcontext/hardsoft_example_test\\.go$"
-      linters: ["govet"]
-      text: "lostcancel|tests: .* should return nothing"
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

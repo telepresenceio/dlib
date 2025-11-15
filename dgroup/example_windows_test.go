@@ -6,8 +6,9 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
-	"syscall"
 	"testing"
+
+	"golang.org/x/sys/windows"
 )
 
 func ensureProcessGroup() (keepGoing bool) {
@@ -15,7 +16,10 @@ func ensureProcessGroup() (keepGoing bool) {
 		return true
 	}
 
-	pc, _, _, _ := runtime.Caller(1)
+	pc, _, _, ok := runtime.Caller(1)
+	if !ok {
+		return false
+	}
 	qname := runtime.FuncForPC(pc).Name() // Returns "domain.tld/pkgpath.Function".
 	dot := strings.LastIndex(qname, ".")  // Find the dot separating the pkg from the func.
 	name := qname[dot+1:]                 // Split on that dot.
@@ -24,8 +28,8 @@ func ensureProcessGroup() (keepGoing bool) {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP,
+	cmd.SysProcAttr = &windows.SysProcAttr{
+		CreationFlags: windows.CREATE_NEW_PROCESS_GROUP,
 	}
 	cmd.Env = append(os.Environ(),
 		"GO_WANT_HELPER_PROCESS=1",

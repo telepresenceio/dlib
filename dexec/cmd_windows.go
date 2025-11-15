@@ -1,12 +1,10 @@
 package dexec
 
-import (
-	"syscall"
-)
+import "golang.org/x/sys/windows"
 
 func (c *Cmd) canInterrupt() bool {
 	return c != nil &&
 		c.Cmd != nil &&
-		c.Cmd.SysProcAttr != nil &&
-		(c.Cmd.SysProcAttr.CreationFlags&syscall.CREATE_NEW_PROCESS_GROUP) != 0
+		c.SysProcAttr != nil &&
+		(c.SysProcAttr.CreationFlags&windows.CREATE_NEW_PROCESS_GROUP) != 0
 }

@@ -30,15 +30,15 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"syscall"
+	"syscall" //nolint:depguard // unix.SIGTERM doesn't compile on windows
 	"time"
 
 	"github.com/pkg/errors"
 
-	"github.com/datawire/dlib/v2/dcontext"
-	"github.com/datawire/dlib/v2/derrgroup"
-	"github.com/datawire/dlib/v2/derror"
-	"github.com/datawire/dlib/v2/dlog"
+	"github.com/telepresenceio/dlib/v2/dcontext"
+	"github.com/telepresenceio/dlib/v2/derrgroup"
+	"github.com/telepresenceio/dlib/v2/derror"
+	"github.com/telepresenceio/dlib/v2/dlog"
 )
 
 // A Group is a collection of goroutines working on subtasks that are
@@ -96,7 +96,7 @@ func logGoroutineStatuses(
 	}
 }
 
-var stacktraceForTesting string
+var stacktraceForTesting string //nolint:gochecknoglobals // for testing only
 
 func logGoroutineTraces(
 	ctx context.Context,
@@ -160,6 +160,10 @@ type GroupConfig struct {
 	// zero value means to not force Wait() to return early.
 	HardShutdownTimeout time.Duration
 
+	// IgnoreSignalError ensures that Wait() discards any error
+	// generated when the signal handler receives a signal.
+	IgnoreSignalError bool
+
 	DisablePanicRecovery bool
 	DisableLogging       bool
 
@@ -181,14 +185,13 @@ func NewGroup(ctx context.Context, cfg GroupConfig) *Group {
 
 	g := &Group{
 		cfg: cfg,
-		//baseCtx: gets set below,
-
+		// baseCtx: gets set below,
 		shutdownTimedOut: make(chan struct{}),
 		waitFinished:     make(chan struct{}),
 		hardCancel:       hardCancel,
 
 		workers: derrgroup.NewGroup(softCancel, cfg.ShutdownOnNonError),
-		//supervisors: zero value is fine; doesn't need initialize,
+		// supervisors: zero value is fine; doesn't need initialize,
 	}
 	g.baseCtx = context.WithValue(ctx, groupKey{}, g)
 
@@ -293,7 +296,7 @@ func (g *Group) launchSupervisors() {
 
 	if g.cfg.EnableSignalHandling {
 		sigs := make(chan os.Signal, 1)
-		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+		signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) //nolint:depguard // unix.SIGTERM doesn't compile on windows
 		g.goSupervisor("signal_handler", func(ctx context.Context) {
 			<-g.waitFinished
 			signal.Stop(sigs)
@@ -308,16 +311,17 @@ func (g *Group) launchSupervisors() {
 				// Specifically use fmt.Errorf instead of errors.Errorf here, to avoid including a
 				// stacktrace with the error, these are "expected" errors, and including stacktraces for
 				// them in the group's exit logging would just be noise.
-				if ctx.Err() == nil {
-					err := fmt.Errorf("received signal %v (triggering graceful shutdown)", sig)
+				switch {
+				case ctx.Err() == nil:
+					err := derrgroup.NewSoftSignalError(sig, g.cfg.IgnoreSignalError)
 
 					g.goWorkerCtx(ctx, func(_ context.Context) error {
 						return err
 					})
 					<-ctx.Done()
 
-				} else if dcontext.HardContext(ctx).Err() == nil {
-					err := fmt.Errorf("received signal %v (graceful shutdown already triggered; triggering not-so-graceful shutdown)", sig)
+				case dcontext.HardContext(ctx).Err() == nil:
+					err := derrgroup.NewHardSignalError(sig)
 
 					if !g.cfg.DisableLogging {
 						dlog.Errorln(ctx, err)
@@ -325,7 +329,7 @@ func (g *Group) launchSupervisors() {
 					}
 					g.hardCancel()
 
-				} else {
+				default:
 					err := fmt.Errorf("received signal %v (not-so-graceful shutdown already triggered)", sig)
 
 					if !g.cfg.DisableLogging {
