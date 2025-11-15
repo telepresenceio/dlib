@@ -9,7 +9,7 @@ linters-settings:
   goimports:
     local-prefixes: github.com/datawire/dlib
   errcheck:
-    exclude: "./.circleci/errcheck-exclude.txt"
+    exclude-functions: "./.circleci/errcheck-exclude.txt"
   nolintlint:
     allow-leading-space: false
 issues:

@@ -1,10 +1,12 @@
 module local
 
-go 1.19
+go 1.24
 
-require golang.org/x/tools v0.4.0
+toolchain go1.24.0
+
+require golang.org/x/tools v0.31.0
 
 require (
-	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/mod v0.24.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
 )
