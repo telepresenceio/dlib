@@ -1,8 +1,10 @@
 package dlog_test
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -10,7 +12,9 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -337,4 +341,60 @@ func TestFallbackLogger(t *testing.T) {
 	dlog.Info(ctx, expectedLog)
 	assert.Len(t, log.entries, 1)
 	assert.Equal(t, expectedLog, log.entries[0].message)
+}
+
+type safeBuffer struct {
+	sync.Mutex
+	b bytes.Buffer
+}
+
+func (b *safeBuffer) Write(p []byte) (n int, err error) {
+	b.Lock()
+	n, err = b.b.Write(p)
+	b.Unlock()
+	return n, err
+}
+
+func (b *safeBuffer) String() (s string) {
+	b.Lock()
+	s = b.b.String()
+	b.Unlock()
+	return s
+}
+
+func TestSplitLogger(t *testing.T) {
+	outLog := logrus.New()
+	outBuf := safeBuffer{}
+	outLog.SetOutput(&outBuf)
+
+	errLog := logrus.New()
+	errBuf := safeBuffer{}
+	errLog.SetOutput(&errBuf)
+
+	outLog.SetLevel(logrus.TraceLevel)
+	errLog.SetLevel(logrus.TraceLevel)
+	splitLog := dlog.NewSplitLogger(dlog.WrapLogrus(outLog), dlog.WrapLogrus(errLog))
+	splitLog.Errorln("error message")
+	splitLog.Warnln("warning message")
+	splitLog.Infoln("info message")
+	splitLog.Debugln("debug message")
+	splitLog.Traceln("trace message")
+
+	errWriter, ok := splitLog.StdLogger(dlog.LogLevelError).Writer().(io.WriteCloser)
+	assert.True(t, ok)
+	_, err := errWriter.Write([]byte("stderr message\n"))
+	assert.NoError(t, err)
+	assert.NoError(t, errWriter.Close())
+
+	outWriter, ok := splitLog.StdLogger(dlog.LogLevelInfo).Writer().(io.WriteCloser)
+	assert.True(t, ok)
+	_, err = outWriter.Write([]byte("stdout message\n"))
+	assert.NoError(t, err)
+	assert.NoError(t, outWriter.Close())
+
+	// Give the StdLogger pipes time to propagate
+	time.Sleep(10 * time.Millisecond)
+
+	assert.Regexp(t, `(?m:\Atime="[^"]+" level=warning msg="warning message"\ntime="[^"]+" level=info msg="info message"\ntime="[^"]+" level=debug msg="debug message"\ntime="[^"]+" level=trace msg="trace message"\ntime="[^"]+" level=info msg="stdout message"\n\z)`, outBuf.String())
+	assert.Regexp(t, `(?m:\Atime="[^"]+" level=error msg="error message"\ntime="[^"]+" level=error msg="stderr message"\n\z)`, errBuf.String())
 }
