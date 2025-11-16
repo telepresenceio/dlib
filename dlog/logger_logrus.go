@@ -50,7 +50,7 @@ func logrusLevel(level LogLevel) logrus.Level {
 }
 
 func (l logrusWrapper) LogMessage(level LogLevel, message string) {
-	l.Log(level, message)
+	l.loggerOrEntry.Log(logrusLevel(level), message)
 }
 
 func (l logrusWrapper) StdLogger(level LogLevel) *log.Logger {
@@ -105,38 +105,41 @@ func (logrusFixCallerHook) Levels() []logrus.Level {
 }
 
 func (logrusFixCallerHook) Fire(entry *logrus.Entry) error {
-	if entry.Caller != nil && strings.HasPrefix(entry.Caller.Function, dlogPackageDot) {
-		entry.Caller = getCaller()
+	if entry.Caller != nil {
+		fn := entry.Caller.Function
+		if strings.HasPrefix(fn, dlogPackageDot) {
+			entry.Caller = getCallerOf(fn)
+		}
 	}
 	return nil
 }
 
 const (
 	dlogPackageDot         = "github.com/telepresenceio/dlib/v2/dlog."
-	logrusPackageDot       = "github.com/sirupsen/logrus."
 	maximumCallerDepth int = 25
-	minimumCallerDepth int = 2 // runtime.Callers + getCaller
+	minimumCallerDepth int = 6 // runtime.Callers + getCallerOf + logrus.Fire, fireHooks, entry.log, entry.Log
 )
 
-// Duplicate of logrus.getCaller() because Logrus doesn't have the
-// kind if skip/.Helper() functionality that testing.TB has.
+// getCallerOf finds the caller of dlog based on dlog's caller of logrus.
+// We need this because logrus doesn't have the kind if skip/.Helper()
+// functionality that testing.TB has.
 //
 // https://github.com/sirupsen/logrus/issues/972
-func getCaller() *runtime.Frame {
+func getCallerOf(fn string) *runtime.Frame {
 	// Restrict the lookback frames to avoid runaway lookups
 	pcs := make([]uintptr, maximumCallerDepth)
 	depth := runtime.Callers(minimumCallerDepth, pcs)
 	frames := runtime.CallersFrames(pcs[:depth])
 
 	for f, again := frames.Next(); again; f, again = frames.Next() {
-		// If the caller isn't part of this package, we're done
-		if strings.HasPrefix(f.Function, logrusPackageDot) {
-			continue
+		if f.Function == fn {
+			// dlog's caller of logrus found, now find caller of dlog.
+			for f, again = frames.Next(); again; f, again = frames.Next() {
+				if !strings.HasPrefix(f.Function, dlogPackageDot) {
+					return &f
+				}
+			}
 		}
-		if strings.HasPrefix(f.Function, dlogPackageDot) {
-			continue
-		}
-		return &f
 	}
 
 	// if we got here, we failed to find the caller's context
