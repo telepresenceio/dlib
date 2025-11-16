@@ -117,10 +117,6 @@
 
 	cat <<-EOT
 	}
-
-	func (l BaseLogger) WithField(key string, value any) Logger {
-		return l
-	}
 	EOT
 	for lvl in "${levels[@]}"; do
 		emitBaseImpl "$lvl" "$lvl"

@@ -9,6 +9,10 @@ type splitLogger struct {
 	errLog GenericLogger
 }
 
+func (l splitLogger) WithField(key string, value any) Logger {
+	return &BaseLogger{GenericLogger: splitLogger{outLog: l.outLog.WithField(key, value), errLog: l.errLog.WithField(key, value)}}
+}
+
 var _ GenericLogger = splitLogger{}
 
 func (l splitLogger) levelLogger(level LogLevel) (lg GenericLogger) {

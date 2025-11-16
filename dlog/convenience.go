@@ -130,10 +130,6 @@ type Logger interface {
 	Warningln(args ...any)
 }
 
-func (l BaseLogger) WithField(key string, value any) Logger {
-	return l
-}
-
 func (l BaseLogger) Error(args ...any) {
 	l.Helper()
 	l.Log(LogLevelError, args...)

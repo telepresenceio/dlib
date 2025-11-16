@@ -54,6 +54,8 @@ type GenericLogger interface {
 	// adds spaces between operands; in the manner of fmt.Println() but without appending
 	// a newline.
 	Logln(level LogLevel, args ...any)
+
+	WithField(key string, value any) Logger
 }
 
 // LoggerWithMaxLevel can be implemented by loggers that define a maximum
@@ -96,6 +98,10 @@ const (
 // that lack the level-specific functions, such as the standard logger.
 type GenericImpl struct {
 	PlainLogger
+}
+
+func (l GenericImpl) WithField(key string, value any) Logger {
+	return &BaseLogger{GenericLogger: l}
 }
 
 func (l GenericImpl) Log(level LogLevel, args ...any) {
