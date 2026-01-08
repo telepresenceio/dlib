@@ -9,6 +9,19 @@ import (
 
 type loggerContextKey struct{}
 
+type Wrapper interface {
+	Get(ctx context.Context) Logger
+	Set(ctx context.Context, logger Logger) context.Context
+}
+
+// WithWrapper installs a [Wrapper] that will override the functionality of the `getLogger` and
+// `WithLogger` functions so that those functions can return a wrapped logger implementation,
+// possibly also managed using a context.
+func WithWrapper(ctx context.Context, wrapper Wrapper) context.Context {
+	return context.WithValue(ctx, loggerContextKey{}, wrapper)
+}
+
+
 // getLogger returns the logger associated with the Context, or else the fallback logger.
 //
 // You may be asking "Why isn't this exported?  In some cases there might be debug or trace logging
@@ -30,6 +43,9 @@ func getLogger(ctx context.Context) Logger {
 	if logger == nil {
 		return getFallbackLogger()
 	}
+	if w, ok := logger.(Wrapper); ok {
+		return w.Get(ctx)
+	}
 	return logger.(Logger)
 }
 
@@ -43,6 +59,9 @@ func getLogger(ctx context.Context) Logger {
 // If the logger implements OptimizedLogger, then dlog will take
 // advantage of that.
 func WithLogger(ctx context.Context, logger Logger) context.Context {
+	if w, ok := ctx.Value(loggerContextKey{}).(Wrapper); ok {
+		return w.Set(ctx, logger)
+	}
 	return context.WithValue(ctx, loggerContextKey{}, logger)
 }
 
